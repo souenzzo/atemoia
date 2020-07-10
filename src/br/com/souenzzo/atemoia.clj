@@ -4,6 +4,7 @@
 
 (defn index
   [req]
+  (prn (keys req))
   {:body    "ok"
    :headers {"Content-Type" "text/plain"}
    :status  200})
@@ -22,6 +23,7 @@
 
 (defn -main
   [& _]
+  (prn [:starting!!])
   (swap! state
          (fn [st]
            (when st
