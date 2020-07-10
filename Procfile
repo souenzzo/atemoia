@@ -1,1 +1,1 @@
-web: clojure -m br.com.souenzzo.atemoia
+web: clojure --report stderr -m br.com.souenzzo.atemoia
