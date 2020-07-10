@@ -10,7 +10,7 @@
    :headers {"Content-Type" "text/plain"}
    :status  200})
 
-(def routes `#{["/" :get index]})
+(def routes `#{["/*" :any index]})
 (def port (edn/read-string (System/getenv "PORT")))
 
 (def service-map
