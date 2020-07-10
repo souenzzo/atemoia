@@ -22,16 +22,27 @@
 (defonce state
          (atom nil))
 
+(defn debug
+  [x y]
+  (prn y)
+  x)
+
 (defn -main
   [& _]
   (prn [:starting!!])
   (pp/pprint (into {} (System/getenv)))
   (swap! state
          (fn [st]
+           (prn :Ok)
            (when st
+             (prn :sopt)
              (http/stop st))
+           (prn :xxx)
            (-> service-map
+               (doto (debug :a))
                http/default-interceptors
+               (doto (debug :b))
                http/create-server
-               http/start)
-           (doto pp/pprint))))
+               (doto (debug :c))
+               http/start
+               (doto pp/pprint)))))
