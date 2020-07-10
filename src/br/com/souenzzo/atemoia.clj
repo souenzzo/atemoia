@@ -1,6 +1,7 @@
 (ns br.com.souenzzo.atemoia
   (:require [io.pedestal.http :as http]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.pprint :as pp]))
 
 (defn index
   [req]
@@ -24,6 +25,7 @@
 (defn -main
   [& _]
   (prn [:starting!!])
+  (pp/pprint (into {} (System/getenv)))
   (swap! state
          (fn [st]
            (when st
@@ -31,4 +33,5 @@
            (-> service-map
                http/default-interceptors
                http/create-server
-               http/start))))
+               http/start)
+           (doto pp/pprint))))
