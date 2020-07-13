@@ -1,7 +1,8 @@
 (ns br.com.souenzzo.atemoia
   (:require [io.pedestal.http :as http]
             [hiccup2.core :as h]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.pprint :as pp]))
 
 (defonce counter
          (atom 0))
@@ -12,7 +13,7 @@
                   [:head
                    [:meta {:charset "utf-8"}]
                    [:link {:href "data:image/svg+xml;utf8"
-                           :rel "icon"}]
+                           :rel  "icon"}]
                    [:title "atemoia"]]
                   [:body
                    [:main
@@ -23,7 +24,10 @@
                        [:td @counter]]]]
                     [:form
                      {:action "/inc" :method "POST"}
-                     [:input {:type "submit" :value "+"}]]]]]
+                     [:input {:type "submit" :value "+"}]]]
+                   [:footer
+                    [:pre
+                     (with-out-str (pp/pprint (into {} (System/getenv))))]]]]
                  (h/html {:mode :html})
                  str)
    :headers {"Content-Type" "text/html;UTF=8"}
