@@ -1,8 +1,7 @@
 (ns br.com.souenzzo.atemoia
   (:require [io.pedestal.http :as http]
             [hiccup2.core :as h]
-            [clojure.edn :as edn]
-            [clojure.pprint :as pp]))
+            [clojure.edn :as edn]))
 
 (defonce counter
          (atom 0))
@@ -16,6 +15,7 @@
                            :rel  "icon"}]
                    [:title "atemoia"]]
                   [:body
+                   [:header]
                    [:main
                     [:table
                      [:tbody
@@ -26,8 +26,11 @@
                      {:action "/inc" :method "POST"}
                      [:input {:type "submit" :value "+"}]]]
                    [:footer
-                    [:pre (with-out-str (pp/pprint (into {} (System/getenv))))]
-                    [:pre (with-out-str (pp/pprint (into {} (System/getProperties))))]]]]
+                    [:table
+                     [:tbody
+                      [:tr
+                       [:th "v"]
+                       [:th (System/getenv "CURRENT_COMMIT")]]]]]]]
                  (h/html {:mode :html})
                  str)
    :headers {"Content-Type" "text/html;UTF=8"}
