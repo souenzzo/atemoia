@@ -1,8 +1,7 @@
 (ns br.com.souenzzo.atemoia
   (:require [io.pedestal.http :as http]
             [hiccup2.core :as h]
-            [clojure.edn :as edn]
-            [clojure.pprint :as pp]))
+            [clojure.edn :as edn]))
 
 (defonce counter
          (atom 0))
@@ -24,10 +23,7 @@
                        [:td @counter]]]]
                     [:form
                      {:action "/inc" :method "POST"}
-                     [:input {:type "submit" :value "+"}]]]
-                   [:footer
-                    [:pre
-                     (with-out-str (pp/pprint (into {} (System/getenv))))]]]]
+                     [:input {:type "submit" :value "+"}]]]]]
                  (h/html {:mode :html})
                  str)
    :headers {"Content-Type" "text/html;UTF=8"}

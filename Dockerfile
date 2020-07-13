@@ -3,7 +3,8 @@ RUN apk add make git
 RUN adduser -D atemoia
 USER atemoia
 ADD --chown=atemoia . /home/atemoia
-RUN cd /home/atemoia && ls -lah && ls -Ralh ./**  && make clean start.sh
+ADD --chown=atemoia ./.git /home/atemoia/.git
+RUN cd /home/atemoia && make clean start.sh
 
 FROM openjdk:alpine
 RUN adduser -D atemoia
