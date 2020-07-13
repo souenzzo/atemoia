@@ -1,9 +1,10 @@
 FROM clojure:tools-deps-alpine AS build
-RUN apk add make git
+RUN apk add make git tree
 RUN adduser -D atemoia
 USER atemoia
-ADD --chown=atemoia . /home/atemoia
-RUN cd /home/atemoia && make clean start.sh
+WORKDIR /home/atemoia
+COPY --chown=atemoia Makefile .
+RUN make start.sh && rm -rf Makefile .gitlibs/_repos
 
 FROM openjdk:alpine
 RUN adduser -D atemoia
