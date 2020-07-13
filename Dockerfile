@@ -4,6 +4,7 @@ RUN adduser -D atemoia
 USER atemoia
 ADD --chown=atemoia . /home/atemoia
 RUN cd /home/atemoia && make clean start.sh
+RUN env
 
 FROM openjdk:alpine
 RUN adduser -D atemoia
