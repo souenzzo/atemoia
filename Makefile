@@ -15,7 +15,7 @@ current-deps: .git/refs/heads/master
 
 start.sh: current-deps
 	echo "#!/usr/bin/env sh" > start.sh
-	echo "export CURRENT_COMMIT='$$(head -1 .git/refs/heads/master)'" >> start.sh
-	echo "java -cp '$$(clojure -Srepro -Spath -Sdeps "$$(cat current-deps)")' clojure.main --report stderr -m br.com.souenzzo.atemoia" \
+	echo "export CURRENT_COMMIT='$$(head -1 .git/refs/heads/master)'" | tee -a start.sh
+	echo "java -Dclojure.main.report=stderr -cp '$$(clojure -Srepro -Spath -Sdeps "$$(cat current-deps)")' clojure.main -m br.com.souenzzo.atemoia" \
     | tee -a start.sh
 	chmod +x start.sh
