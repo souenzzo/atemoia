@@ -55,16 +55,11 @@
 
 (defn -main
   [& _]
-  (prn :-main)
   (swap! state
          (fn [st]
-           (prn :st)
            (when st
-             (prn :stop)
              (http/stop st))
-           (prn :starting)
            (-> service-map
                http/default-interceptors
                http/create-server
-               http/start)
-           (prn :started))))
+               http/start))))
