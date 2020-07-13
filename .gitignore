@@ -3,3 +3,4 @@ target/
 .idea/
 *.iml
 .nrepl-port
+start.sh
