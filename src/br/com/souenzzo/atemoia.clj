@@ -30,7 +30,16 @@
                      [:tbody
                       [:tr
                        [:th "v"]
-                       [:th (System/getenv "CURRENT_COMMIT")]]]]]]]
+                       [:td (System/getenv "CURRENT_COMMIT")]]
+                      [:tr
+                       [:th "TotalMemory"]
+                       [:td (.totalMemory (Runtime/getRuntime))]]
+                      [:tr
+                       [:th "Max Memory"]
+                       [:td (.maxMemory (Runtime/getRuntime))]]
+                      [:tr
+                       [:th "Free Memory"]
+                       [:td (.freeMemory (Runtime/getRuntime))]]]]]]]
                  (h/html {:mode :html})
                  str)
    :headers {"Content-Type" "text/html;UTF=8"}
