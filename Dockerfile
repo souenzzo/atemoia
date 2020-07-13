@@ -1,4 +1,4 @@
-FROM clojure:openjdk-15-alpine AS build
+FROM clojure:openjdk-15-tools-deps-alpine AS build
 RUN apk add make git tree
 RUN adduser -D atemoia
 USER atemoia
