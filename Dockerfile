@@ -3,7 +3,7 @@ RUN apk add make git
 RUN adduser -D atemoia
 USER atemoia
 ADD --chown=atemoia . /home/atemoia
-ADD --chown=atemoia ./.git /home/atemoia/.git
+RUN git clone https://git.heroku.com/stormy-oasis-99676.git
 RUN cd /home/atemoia && make clean start.sh
 
 FROM openjdk:alpine
