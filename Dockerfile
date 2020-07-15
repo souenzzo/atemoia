@@ -1,5 +1,5 @@
 FROM clojure:openjdk-15-tools-deps-alpine AS build
-RUN apk add make git tree
+RUN apk add make git
 RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia

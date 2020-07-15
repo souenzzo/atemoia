@@ -18,5 +18,5 @@ start.sh: current-deps
 	echo "export CURRENT_COMMIT='$$(head -1 .git/refs/heads/master)'" | tee -a start.sh
 	echo "java -Xmx500m -Dclojure.main.report=stderr -cp '$$(clojure -Srepro -Spath -Sdeps "$$(cat current-deps)")' clojure.main -m br.com.souenzzo.atemoia" \
     | tee -a start.sh
-	mkdir classes && clojure -e "(compile 'br.com.souenzzo.atemoia)"
+	mkdir classes && clojure -Srepro -Sdeps "$$(cat current-deps) -e "(compile 'br.com.souenzzo.atemoia)"
 	chmod +x start.sh
