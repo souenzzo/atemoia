@@ -8,34 +8,6 @@
 
 (set! *warn-on-reflection* true)
 
-(def register
-  (concat [(pc/resolver `current-commit
-                        {::pc/output [::current-commit]}
-                        (fn [_ _]
-                          {::current-commit (System/getenv "CURRENT_COMMIT")}))
-           (pc/resolver `counter
-                        {::pc/output [::counter]}
-                        (fn [{::keys [counter-state]} _]
-                          {::counter @counter-state}))
-           (pc/mutation `increment
-                        {}
-                        (fn [{::keys [counter-state]} _]
-                          (swap! counter-state inc)
-                          {}))
-           (pc/resolver `memory
-                        {::pc/output [::total-memory
-                                      ::max-memory
-                                      ::free-memory]}
-                        (fn [_ _]
-                          (let [rt (Runtime/getRuntime)]
-                            {::total-memory (.maxMemory rt)
-                             ::max-memory   (.maxMemory rt)
-                             ::free-memory  (.freeMemory rt)})))
-           pc/index-explorer-resolver]
-          pc/connect-resolvers))
-
-(def indexes (pc/register {} register))
-
 (defn hoc-table
   [{::keys [display-props labels]}]
   (fn
@@ -77,12 +49,26 @@
   (hoc-form {::sym `increment}))
 
 (defn ui-body
-  ([env] [{:>/table-counter (ui-table-counter env)}
+  ([env] [{::nav-links [::nav-label
+                        ::nav-href
+                        ::nav-active?]}
+          {:>/table-counter (ui-table-counter env)}
           {:>/inc-form (ui-inc-form env)}
           {:>/table-app-info (ui-table-app-info env)}])
-  ([env {:>/keys [inc-form table-counter table-app-info]}]
+  ([env {::keys  [nav-links]
+         :>/keys [inc-form table-counter table-app-info]}]
    [:body
-    [:header]
+    [:header
+     [:nav
+      [:ul
+       (for [{::keys [nav-label
+                      nav-href
+                      nav-active?]} nav-links]
+         [:li
+          [:a
+           {:href    nav-href
+            :disable nav-active?}
+           nav-label]])]]]
     [:main
      (ui-table-counter env table-counter)
      (ui-inc-form env inc-form)]
@@ -107,41 +93,91 @@
     (ui-body env body)]))
 
 
-(defonce counter-state
-         (atom 0))
+(pc/defresolver index-page [{:keys [parser]
+                             :as   env} input]
+  {::path      "/"
+   ::pc/output [::index-page]}
+  (let [tree (parser env (ui-html env))]
+    {::index-page {:body    (str (h/html {:mode :html}
+                                         (ui-html env tree)))
+                   :headers {"Content-Type" "text/html"}
+                   :status  200}}))
+
+
+(def register
+  (concat [index-page
+           (pc/resolver `current-commit
+                        {::pc/output [::current-commit]}
+                        (fn [_ _]
+                          {::current-commit (System/getenv "CURRENT_COMMIT")}))
+           (pc/resolver `counter
+                        {::pc/output [::counter]}
+                        (fn [{::keys [counter-state]} _]
+                          {::counter @counter-state}))
+           (pc/mutation `increment
+                        {}
+                        (fn [{::keys [counter-state]} _]
+                          (swap! counter-state inc)
+                          {}))
+           (pc/constantly-resolver ::nav-links [{::nav-label   "foo"
+                                                 ::nav-href    "/foo"
+                                                 ::nav-active? false}
+                                                {::nav-label   "foo"
+                                                 ::nav-href    "/foo"
+                                                 ::nav-active? false}])
+           (pc/resolver `memory
+                        {::pc/output [::total-memory
+                                      ::max-memory
+                                      ::free-memory]}
+                        (fn [_ _]
+                          (let [rt (Runtime/getRuntime)]
+                            {::total-memory (.maxMemory rt)
+                             ::max-memory   (.maxMemory rt)
+                             ::free-memory  (.freeMemory rt)})))
+           pc/index-explorer-resolver]
+          pc/connect-resolvers))
+
+
+(def indexes (pc/register {} register))
 
 
 (def parser
   (p/parser {::p/plugins [(pc/connect-plugin {::pc/indexes (atom indexes)})]
-             ::p/mutate  pc/mutate
-             ::p/env     {::p/reader               [p/map-reader
-                                                    pc/reader3
-                                                    pc/open-ident-reader
-                                                    p/env-placeholder-reader]
-                          ::counter-state          counter-state
-                          ::p/placeholder-prefixes #{">"}}}))
+             ::p/mutate  pc/mutate}))
 
-
-(defn current
+(defonce counter-state
+         (atom 0))
+(defn req->env
   [req]
-  (let [req (assoc req ::pc/indexes indexes)
-        tree (parser req (ui-html req))]
-    {:body    (->> (ui-html req tree)
-                   (h/html {:mode :html})
-                   str)
-     :headers {"Content-Type" "text/html"}
-     :status  200}))
+  (assoc req
+    ::p/reader [p/map-reader
+                pc/reader3
+                pc/open-ident-reader
+                p/env-placeholder-reader]
+    ::counter-state counter-state
+    ::p/placeholder-prefixes #{">"}
+    ::pc/indexes indexes))
 
 (def routes
-  (into `#{["/" :get current]}
-        (for [{::pc/keys [sym]} (vals (::pc/index-mutations indexes))]
-          [(str "/" sym)
-           :post (fn [req]
-                   (parser req `[{(~sym {})
-                                  []}])
-                   {:headers {"Location" "/"}
-                    :status  302})
-           :route-name (keyword sym)])))
+  (into `#{}
+        cat
+        [(for [{::pc/keys [output sym]
+                ::keys    [path]} (vals (::pc/index-resolvers indexes))
+               :when path]
+           [path :get (fn [req]
+                        (let [env (req->env req)
+                              tree (parser env output)]
+                          (first (keep tree output))))
+            :route-name (keyword sym)])
+         (for [{::pc/keys [sym]} (vals (::pc/index-mutations indexes))]
+           [(str "/" sym)
+            :post (fn [req]
+                    (parser (req->env req)
+                            `[{(~sym {})
+                               []}])
+                    {:headers {"Location" "/"}
+                     :status  302})
+            :route-name (keyword sym)])]))
 (def port (edn/read-string (System/getenv "PORT")))
 
 (def service-map
@@ -162,5 +198,6 @@
              (http/stop st))
            (-> service-map
                http/default-interceptors
+               http/dev-interceptors
                http/create-server
                http/start))))
