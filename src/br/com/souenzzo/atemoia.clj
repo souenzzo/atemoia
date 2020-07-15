@@ -1,12 +1,18 @@
 (ns br.com.souenzzo.atemoia
-  (:require [io.pedestal.http :as http]
-            [hiccup2.core :as h]
-            [clojure.edn :as edn]
+  (:require [clojure.edn :as edn]
+            [com.wsscode.pathom.connect :as pc]
             [com.wsscode.pathom.core :as p]
-            [com.wsscode.pathom.connect :as pc])
+            [hiccup2.core :as h]
+            [io.pedestal.http :as http]
+            [io.pedestal.http.route :as route])
   (:import (java.nio.charset StandardCharsets)))
 
 (set! *warn-on-reflection* true)
+
+(defn dispatch!
+  [{:keys [parser]
+    :as   env} tx]
+  (parser env tx))
 
 (defn hoc-table
   [{::keys [display-props labels]}]
@@ -93,11 +99,10 @@
     (ui-body env body)]))
 
 
-(pc/defresolver index-page [{:keys [parser]
-                             :as   env} input]
+(pc/defresolver index-page [env input]
   {::path      "/"
    ::pc/output [::index-page]}
-  (let [tree (parser env (ui-html env))]
+  (let [tree (dispatch! env (ui-html env))]
     {::index-page {:body    (str (h/html {:mode :html}
                                          (ui-html env tree)))
                    :headers {"Content-Type" "text/html"}
@@ -119,12 +124,17 @@
                         (fn [{::keys [counter-state]} _]
                           (swap! counter-state inc)
                           {}))
-           (pc/constantly-resolver ::nav-links [{::nav-label   "foo"
-                                                 ::nav-href    "/foo"
-                                                 ::nav-active? false}
-                                                {::nav-label   "foo"
-                                                 ::nav-href    "/foo"
-                                                 ::nav-active? false}])
+           (pc/resolver `nav-links
+                        {::pc/output [::nav-links]}
+                        (fn [env _]
+                          {::nav-links (for [{::pc/keys [output sym]
+                                              ::keys    [path]} (-> env
+                                                                    ::pc/indexes
+                                                                    ::pc/index-resolvers
+                                                                    vals)
+                                             :when path]
+                                         {::nav-label (pr-str sym)
+                                          ::nav-href  path})}))
            (pc/resolver `memory
                         {::pc/output [::total-memory
                                       ::max-memory
@@ -150,6 +160,7 @@
 (defn req->env
   [req]
   (assoc req
+    :parser parser
     ::p/reader [p/map-reader
                 pc/reader3
                 pc/open-ident-reader
@@ -166,15 +177,15 @@
                :when path]
            [path :get (fn [req]
                         (let [env (req->env req)
-                              tree (parser env output)]
+                              tree (dispatch! env output)]
                           (first (keep tree output))))
             :route-name (keyword sym)])
          (for [{::pc/keys [sym]} (vals (::pc/index-mutations indexes))]
            [(str "/" sym)
             :post (fn [req]
-                    (parser (req->env req)
-                            `[{(~sym {})
-                               []}])
+                    (dispatch! (req->env req)
+                               `[{(~sym {})
+                                  []}])
                     {:headers {"Location" "/"}
                      :status  302})
             :route-name (keyword sym)])]))
@@ -197,7 +208,9 @@
            (when st
              (http/stop st))
            (-> service-map
+               #_(assoc ::http/routes (fn []
+                                        (route/expand-routes routes)))
                http/default-interceptors
-               http/dev-interceptors
+               #_http/dev-interceptors
                http/create-server
                http/start))))
