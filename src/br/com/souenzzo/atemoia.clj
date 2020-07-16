@@ -36,6 +36,7 @@
   ([env {::keys  [nav-links]
          :>/keys [inc-form table-counter table-app-info]}]
    [:body
+    {:onload "br.com.souenzzo.hoc_client.main()"}
     [:header
      [:nav
       [:ul
@@ -51,7 +52,8 @@
      (ui-table-counter env table-counter)
      (ui-inc-form env inc-form)]
     [:footer
-     (ui-table-app-info env table-app-info)]]))
+     (ui-table-app-info env table-app-info)]
+    [:script {:src "/main.js"}]]))
 
 (defn ui-head
   ([env] [::title])
@@ -77,7 +79,9 @@
   (let [tree (hoc/dispatch! env (ui-html env))]
     {::index-page {:body    (str (h/html {:mode :html}
                                          (ui-html env tree)))
-                   :headers {"Content-Type" "text/html"}
+                   :headers {"Content-Security-Policy" ""
+                             "Cache-Control"           "no-store"
+                             "Content-Type"            "text/html"}
                    :status  200}}))
 
 
@@ -156,10 +160,11 @@
          (fn [st]
            (when st
              (http/stop st))
-           (-> {::http/port   port
-                ::http/host   "0.0.0.0"
-                ::http/type   :jetty
-                ::http/join?  false}
+           (-> {::http/port      port
+                ::http/file-path "target"
+                ::http/host      "0.0.0.0"
+                ::http/type      :jetty
+                ::http/join?     false}
                (assoc ::http/routes (fn []
                                       (hoc/routes {::pc/indexes       indexes
                                                    ::hoc/interceptors [req->env]})))
@@ -167,3 +172,9 @@
                #_http/dev-interceptors
                http/create-server
                http/start))))
+(comment
+  (require
+    '[shadow.cljs.devtools.api :as shadow.api]
+    '[shadow.cljs.devtools.server :as shadow.server])
+  (shadow.server/start!)
+  (shadow.api/watch :web))

@@ -1,0 +1,6 @@
+{:deps   {:aliases [:dev]}
+ :builds {:web {:target     :browser
+                :output-dir "target"
+                :asset-path "/"
+                :modules    {:main {:entries [br.com.souenzzo.hoc-client]}}
+                :devtools   {:after-load  br.com.souenzzo.hoc-client/after-load}}}}
