@@ -1,6 +1,7 @@
 (ns br.com.souenzzo.hoc
   (:require [com.wsscode.pathom.connect :as pc]
-            [io.pedestal.http.route :as route]))
+            [io.pedestal.http.route :as route]
+            [clojure.edn :as edn]))
 
 
 (defn dispatch!
@@ -13,7 +14,13 @@
   [{::keys    [interceptors]
     ::pc/keys [indexes]
     :or       {interceptors []}}]
-  (route/expand-routes (into `#{}
+  (route/expand-routes (into `#{["/api" :post
+                                 ~(conj interceptors
+                                        (fn [{:keys [body] :as env}]
+                                          (let [query (edn/read-string (slurp body))]
+                                            {:status 200
+                                             :body (pr-str (dispatch! env query))})))
+                                 :route-name ::eql-api]}
                              cat
                              [(for [{::pc/keys [output sym]
                                      ::keys    [path]} (vals (::pc/index-resolvers indexes))

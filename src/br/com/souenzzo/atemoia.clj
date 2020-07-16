@@ -53,6 +53,7 @@
      (ui-inc-form env inc-form)]
     [:footer
      (ui-table-app-info env table-app-info)]
+    [:div {:id "app"}]
     [:script {:src "/main.js"}]]))
 
 (defn ui-head

@@ -1,14 +1,13 @@
-FROM clojure:openjdk-15-tools-deps-alpine AS build
-RUN apk add make git
-RUN adduser -D atemoia
-USER atemoia
-WORKDIR /home/atemoia
-COPY --chown=atemoia Makefile .
-RUN make start.sh && rm -rf Makefile .gitlibs/_repos
+FROM node:alpine AS node
+COPY package.json .
+COPY package-lock.json .
+RUN npm install
 
-FROM openjdk:15-alpine
+FROM clojure:tools-deps
 RUN adduser -D atemoia
 USER atemoia
-COPY --from=build /home/atemoia /home/atemoia
 WORKDIR /home/atemoia
-CMD ["/home/atemoia/start.sh"]
+COPY --chown=atemoia . .
+COPY --from=node --chown=atemoia node_modules node_modules
+RUN clojure -A:cljsbuild && mkdir classes && clojure -e "(compile 'br.com.souenzzo.atemoia)"
+CMD ["clojure", "-A:app"]
