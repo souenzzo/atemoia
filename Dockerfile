@@ -3,7 +3,7 @@ COPY package.json .
 COPY package-lock.json .
 RUN npm install
 
-FROM clojure:tools-deps
+FROM openjdk-15-tools-deps-alpine
 RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
