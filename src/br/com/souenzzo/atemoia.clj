@@ -4,55 +4,27 @@
             [com.wsscode.pathom.core :as p]
             [hiccup2.core :as h]
             [io.pedestal.http :as http]
-            [io.pedestal.http.route :as route])
+            [br.com.souenzzo.hoc :as hoc])
   (:import (java.nio.charset StandardCharsets)))
 
 (set! *warn-on-reflection* true)
 
-(defn dispatch!
-  [{:keys [parser]
-    :as   env} tx]
-  (parser env tx))
-
-(defn hoc-table
-  [{::keys [display-props labels]}]
-  (fn
-    ([env] display-props)
-    ([env tree]
-     [:table
-      [:tbody
-       (for [prop display-props]
-         [:tr
-          [:th (get labels prop)]
-          [:td (get tree prop)]])]])))
-
-(defn hoc-form
-  [{::keys [sym]}]
-  (fn
-    ([env] (vec (::pc/params (pc/mutation-data env sym))))
-    ([env tree]
-     [:form
-      {:action (str "/" sym)
-       :method "POST"}
-      [:input {:type "submit" :value (str sym)}]])))
-
-
 (def ui-table-counter
-  (hoc-table {::display-props [::counter]
-              ::labels        {::counter "Counter"}}))
+  (hoc/kv-table {::hoc/display-props [::counter]
+                 ::hoc/labels        {::counter "Counter"}}))
 
 (def ui-table-app-info
-  (hoc-table {::display-props [::current-commit
-                               ::total-memory
-                               ::max-memory
-                               ::free-memory]
-              ::labels        {::current-commit "Current commit"
-                               ::total-memory   "Total memory"
-                               ::max-memory     "Max memory"
-                               ::free-memory    "Free memory"}}))
+  (hoc/kv-table {::hoc/display-props [::current-commit
+                                      ::total-memory
+                                      ::max-memory
+                                      ::free-memory]
+                 ::hoc/labels        {::current-commit "Current commit"
+                                      ::total-memory   "Total memory"
+                                      ::max-memory     "Max memory"
+                                      ::free-memory    "Free memory"}}))
 
 (def ui-inc-form
-  (hoc-form {::sym `increment}))
+  (hoc/form {::hoc/sym `increment}))
 
 (defn ui-body
   ([env] [{::nav-links [::nav-label
@@ -82,13 +54,13 @@
      (ui-table-app-info env table-app-info)]]))
 
 (defn ui-head
-  ([env] [])
-  ([env tree]
+  ([env] [::title])
+  ([env {::keys [title]}]
    [:head
     [:meta {:charset (str StandardCharsets/UTF_8)}]
     [:link {:href "data:image/svg+xml;utf8"
             :rel  "icon"}]
-    [:title "atemoia"]]))
+    [:title title]]))
 
 (defn ui-html
   ([env] [{:>/head (ui-head env)}
@@ -100,9 +72,9 @@
 
 
 (pc/defresolver index-page [env input]
-  {::path      "/"
+  {::hoc/path  "/"
    ::pc/output [::index-page]}
-  (let [tree (dispatch! env (ui-html env))]
+  (let [tree (hoc/dispatch! env (ui-html env))]
     {::index-page {:body    (str (h/html {:mode :html}
                                          (ui-html env tree)))
                    :headers {"Content-Type" "text/html"}
@@ -135,6 +107,7 @@
                                              :when path]
                                          {::nav-label (pr-str sym)
                                           ::nav-href  path})}))
+           (pc/constantly-resolver ::title "Atemoia")
            (pc/resolver `memory
                         {::pc/output [::total-memory
                                       ::max-memory
@@ -157,46 +130,22 @@
 
 (defonce counter-state
          (atom 0))
-(defn req->env
-  [req]
-  (assoc req
-    :parser parser
-    ::p/reader [p/map-reader
-                pc/reader3
-                pc/open-ident-reader
-                p/env-placeholder-reader]
-    ::counter-state counter-state
-    ::p/placeholder-prefixes #{">"}
-    ::pc/indexes indexes))
 
-(def routes
-  (into `#{}
-        cat
-        [(for [{::pc/keys [output sym]
-                ::keys    [path]} (vals (::pc/index-resolvers indexes))
-               :when path]
-           [path :get (fn [req]
-                        (let [env (req->env req)
-                              tree (dispatch! env output)]
-                          (first (keep tree output))))
-            :route-name (keyword sym)])
-         (for [{::pc/keys [sym]} (vals (::pc/index-mutations indexes))]
-           [(str "/" sym)
-            :post (fn [req]
-                    (dispatch! (req->env req)
-                               `[{(~sym {})
-                                  []}])
-                    {:headers {"Location" "/"}
-                     :status  302})
-            :route-name (keyword sym)])]))
+(def req->env
+  {:name  ::req->env
+   :enter (fn [ctx]
+            (update ctx :request (fn [req]
+                                   (assoc req
+                                     :parser parser
+                                     ::p/reader [p/map-reader
+                                                 pc/reader3
+                                                 pc/open-ident-reader
+                                                 p/env-placeholder-reader]
+                                     ::counter-state counter-state
+                                     ::p/placeholder-prefixes #{">"}
+                                     ::pc/indexes indexes))))})
+
 (def port (edn/read-string (System/getenv "PORT")))
-
-(def service-map
-  {::http/port   port
-   ::http/host   "0.0.0.0"
-   ::http/routes routes
-   ::http/type   :jetty
-   ::http/join?  false})
 
 (defonce state
          (atom nil))
@@ -207,9 +156,13 @@
          (fn [st]
            (when st
              (http/stop st))
-           (-> service-map
-               #_(assoc ::http/routes (fn []
-                                        (route/expand-routes routes)))
+           (-> {::http/port   port
+                ::http/host   "0.0.0.0"
+                ::http/type   :jetty
+                ::http/join?  false}
+               (assoc ::http/routes (fn []
+                                      (hoc/routes {::pc/indexes       indexes
+                                                   ::hoc/interceptors [req->env]})))
                http/default-interceptors
                #_http/dev-interceptors
                http/create-server
