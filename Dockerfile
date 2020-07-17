@@ -9,5 +9,5 @@ USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia . .
 COPY --from=node --chown=atemoia node_modules node_modules
-RUN clojure -A:cljsbuild && mkdir classes && clojure -e "(compile 'br.com.souenzzo.atemoia)" && clojure -A:main -Spath
+RUN clojure -A:cljsbuild && mkdir classes && clojure -e "(compile 'br.com.souenzzo.atemoia)" && clojure -A:app -Spath
 CMD ["clojure", "-A:app"]
