@@ -1,0 +1,8 @@
+<component name="ProjectCodeStyleConfiguration">
+  <code_scheme name="Project" version="173">
+    <ClojureCodeStyleSettings>{
+  :clj-br.website/scittle! :only-indent
+  :cursive.formatting/default-only-indent true
+}</ClojureCodeStyleSettings>
+  </code_scheme>
+</component>

@@ -1,0 +1,64 @@
+(ns atemoia.client
+  (:require [reagent.core :as r]
+            [reagent.dom :as rd]))
+
+(defonce state (r/atom {}))
+
+(defn fetch-todos
+  []
+  (-> (js/fetch "/todo")
+    (.then (fn [response]
+             (if (.-ok response)
+               (.json response)
+               (swap! state assoc :error? true))))
+    (.then (fn [{:keys [error?]
+                 :as   todos}]
+             (when-not error?
+               (swap! state assoc :todos (js->clj todos
+                                           :keywordize-keys true)))))))
+
+(defn ui-root
+  []
+  (let [{:keys [error? todos]
+         :as   st} @state]
+    [:div
+     [:ul
+      (for [{:todo/keys [id note]} todos]
+        [:li {:key id}
+         note])]
+     [:form
+      {:on-submit (fn [evt]
+                    (.preventDefault evt)
+                    (let [el (-> ^js evt
+                               ^js .-target
+                               ^js .-elements
+                               ^js .-abc)
+                          json-body #js{:note (.-value el)}
+                          unlock (fn [clen?]
+                                   (fetch-todos)
+                                   (when clen?
+                                     (set! (.-value el) ""))
+                                   (set! (.-disabled el) false))]
+                      (set! (.-disabled el) true)
+                      (-> (js/fetch "/todo" #js{:method "POST"
+                                                :body   (js/JSON.stringify json-body)})
+                        (.then (fn [response]
+                                 (unlock (.-ok response))))
+                        (.catch (fn [ex]
+                                  (unlock false))))))}
+      [:input {:name "abc"}]]
+     (when error? [:button {:on-click (fn []
+                                        (js/fetch "/install-schema"
+                                          #js{:method "POST"}))}
+                   "install schema"])]))
+
+(defn start
+  []
+  (some->> (js/document.getElementById "atemoia")
+    (rd/render [ui-root]))
+  (fetch-todos))
+
+(defn after-load
+  []
+  (some->> (js/document.getElementById "atemoia")
+    (rd/render [ui-root])))

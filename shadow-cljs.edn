@@ -1,6 +1,6 @@
 {:deps   {:aliases [:dev]}
- :builds {:web {:target     :browser
-                :output-dir "target"
-                :asset-path "/"
-                :modules    {:main {:entries [br.com.souenzzo.hoc-client]}}
-                :devtools   {:after-load  br.com.souenzzo.hoc-client/after-load}}}}
+ :builds {:atemoia {:target     :browser
+                    :output-dir "target/classes/public/atemoia"
+                    :asset-path "/atemoia"
+                    :modules    {:main {:init-fn atemoia.client/start}}
+                    :devtools   {:after-load atemoia.client/after-load}}}}
