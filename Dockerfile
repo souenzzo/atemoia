@@ -20,5 +20,5 @@ FROM openjdk:17-jdk-alpine
 RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
-COPY --from=clojure --chown=atemoia /home/atemoia/target/standalone.jar ./
-CMD ["java", "-jar", "standalone.jar"]
+COPY --from=clojure --chown=atemoia /home/atemoia/target/atemoia.jar ./
+CMD ["java", "-jar", "atemoia.jar"]
