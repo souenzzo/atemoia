@@ -14,7 +14,7 @@ COPY --chown=atemoia ./deps.edn ./
 RUN clojure -A:dev -Spath && clojure -Spath
 COPY --chown=atemoia . .
 COPY --from=node --chown=atemoia /home/atemoia/node_modules node_modules
-RUN clojure -A:dev -M -m build
+RUN clojure -A:dev -M -m atemoia.build
 
 FROM openjdk:17-jdk-alpine
 RUN adduser -D atemoia
