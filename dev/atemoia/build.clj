@@ -27,4 +27,5 @@
     (b/uber {:class-dir class-dir
              :main      'atemoia.server
              :uber-file uber-file
-             :basis     basis})))
+             :basis     basis})
+    (shutdown-agents)))

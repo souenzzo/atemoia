@@ -20,8 +20,6 @@
                [:meta {:charset (str StandardCharsets/UTF_8)}]
                [:title "hello!"]]
               [:body
-               [:pre (pr-str (into {}
-                               (System/getenv)))]
                [:div {:id "atemoia"} "World"]
                [:script
                 {:src "/atemoia/main.js"}]]]]
@@ -78,8 +76,9 @@
   [& _]
   (let [port (or (edn/read-string (System/getenv "PORT"))
                8080)
-        jdbc-database-url (or (System/getenv "JDBC_DATABASE_URL")
-                            "jdbc:postgresql://127.0.0.1:5432/postgres?user=postgres&password=postgres")]
+        database-url (or (System/getenv "DATABASE_URL")
+                       "postgresql://127.0.0.1:5432/postgres?user=postgres&password=postgres")
+        jdbc-url (str "jdbc:" database-url)]
     (swap! state
       (fn [st]
         (some-> st http/stop)
@@ -99,7 +98,7 @@
                                                  (-> ctx
                                                    (assoc-in [:request
                                                               ::jdbc-url]
-                                                     jdbc-database-url)))})))
+                                                     jdbc-url)))})))
           http/dev-interceptors
           http/create-server
           http/start)))
