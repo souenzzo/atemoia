@@ -10,7 +10,8 @@
             [cheshire.core :as json]
             [clojure.java.io :as io]
             [clojure.string :as string])
-  (:import (java.nio.charset StandardCharsets)))
+  (:import (java.nio.charset StandardCharsets)
+           (java.net URI)))
 
 (set! *warn-on-reflection* true)
 
@@ -73,15 +74,25 @@
 (defonce state
   (atom nil))
 
+(defn database->jdbc-url
+  [database-url]
+  (let [jdbc-url* (URI/create database-url)
+        creds (.getUserInfo jdbc-url*)
+        [u p] (string/split creds #":" 2)
+        jdbc-url (str "jdbc:postgresql://"
+                   (.getHost jdbc-url*)
+                   ":" (.getPort jdbc-url*)
+                   (.getPath jdbc-url*)
+                   "?user=" u "&password=" p)]
+    jdbc-url))
+
 (defn -main
   [& _]
   (let [port (or (edn/read-string (System/getenv "PORT"))
                8080)
         database-url (or (System/getenv "DATABASE_URL")
-                       "postgres://127.0.0.1:5432/postgres?user=postgres&password=postgres")
-        jdbc-url (string/replace database-url
-                   #"^postgres:"
-                   "jdbc:postgresql:")]
+                       "postgres://kysuizivrnjayj:83d35bdd68deca4ade40b28364d3f57653fbd240a698da5a24fe9eec38ae043a@ec2-34-228-100-83.compute-1.amazonaws.com:5432/d682tetsa6ern8")
+        jdbc-url (database->jdbc-url database-url)]
     (swap! state
       (fn [st]
         (some-> st http/stop)
