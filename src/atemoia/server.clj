@@ -8,7 +8,8 @@
             [io.pedestal.interceptor :as interceptor]
             [io.pedestal.http.route :as route]
             [cheshire.core :as json]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.string :as string])
   (:import (java.nio.charset StandardCharsets)))
 
 (set! *warn-on-reflection* true)
@@ -77,8 +78,10 @@
   (let [port (or (edn/read-string (System/getenv "PORT"))
                8080)
         database-url (or (System/getenv "DATABASE_URL")
-                       "postgresql://127.0.0.1:5432/postgres?user=postgres&password=postgres")
-        jdbc-url (str "jdbc:" database-url)]
+                       "postgres://127.0.0.1:5432/postgres?user=postgres&password=postgres")
+        jdbc-url (string/replace database-url
+                   #"^postgres:"
+                   "jdbc:postgresql:")]
     (swap! state
       (fn [st]
         (some-> st http/stop)
