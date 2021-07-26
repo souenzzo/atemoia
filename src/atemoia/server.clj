@@ -75,14 +75,15 @@
     (swap! state
       (fn [st]
         (some-> st http/stop)
-        (-> {::http/port      port
-             ::http/file-path "target/classes/public"
-             ::http/host      "0.0.0.0"
-             ::http/type      :jetty
-             ::http/routes    (fn []
-                                (-> @#'routes
-                                  route/expand-routes))
-             ::http/join?     false}
+        (-> {::http/port          port
+             ::http/file-path     "target/classes/public"
+             ::http/resource-path "public"
+             ::http/host          "0.0.0.0"
+             ::http/type          :jetty
+             ::http/routes        (fn []
+                                    (-> @#'routes
+                                      route/expand-routes))
+             ::http/join?         false}
           http/default-interceptors
           (update ::http/interceptors
             (partial cons
