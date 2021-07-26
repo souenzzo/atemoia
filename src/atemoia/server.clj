@@ -91,7 +91,7 @@
   (let [port (or (edn/read-string (System/getenv "PORT"))
                8080)
         database-url (or (System/getenv "DATABASE_URL")
-                       "postgres://kysuizivrnjayj:83d35bdd68deca4ade40b28364d3f57653fbd240a698da5a24fe9eec38ae043a@ec2-34-228-100-83.compute-1.amazonaws.com:5432/d682tetsa6ern8")
+                       "postgres://postgres:postgres@127.0.0.1:5432/postgres")
         jdbc-url (database->jdbc-url database-url)]
     (swap! state
       (fn [st]
