@@ -7,6 +7,8 @@ This is a simple fullstack clojure application developed to explain how to deplo
 Before start, I recommend you to be familiar with
 the [clojure project structure](https://souenzzo.com.br/creating-a-clojure-project.html).
 
+Checkout the [running app](https://atemoia.herokuapp.com/).
+
 # Dependencies 
 
 ## Clojure
