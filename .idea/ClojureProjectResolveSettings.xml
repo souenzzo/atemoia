@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClojureProjectResolveSettings">
+    <item key="next.jdbc/with-transaction" resolves-as="clojure.core/with-open" />
     <currentScheme>PROJECT</currentScheme>
   </component>
 </project>

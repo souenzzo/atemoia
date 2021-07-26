@@ -20,6 +20,8 @@
                [:meta {:charset (str StandardCharsets/UTF_8)}]
                [:title "hello!"]]
               [:body
+               [:pre (pr-str (into {}
+                               (System/getenv)))]
                [:div {:id "atemoia"} "World"]
                [:script
                 {:src "/atemoia/main.js"}]]]]
@@ -46,8 +48,14 @@
                io/reader
                (json/parse-stream true)
                :note)]
-    (jdbc/execute! {:jdbcUrl jdbc-url}
-      ["INSERT INTO todo (note) VALUES (?)" note])
+    (jdbc/with-transaction [conn (jdbc/get-connection {:jdbcUrl jdbc-url})]
+      (jdbc/execute! conn
+        ["INSERT INTO todo (note) VALUES (?)"
+         note])
+      (when (< 10 (:count (first (jdbc/execute! conn
+                                   ["SELECT count(id) FROM todo"]))))
+        (jdbc/execute! conn
+          ["DELETE FROM todo WHERE id IN (SELECT min(id) FROM todo)"])))
     {:status 201}))
 
 (defn install-schema
