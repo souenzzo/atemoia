@@ -20,9 +20,9 @@
   (let [html [:html
               [:head
                [:meta {:charset (str StandardCharsets/UTF_8)}]
-               [:title "hello!"]]
+               [:title "atemoia"]]
               [:body
-               [:div {:id "atemoia"} "World"]
+               [:div {:id "atemoia"} "loading ..."]
                [:script
                 {:src "/atemoia/main.js"}]]]]
     {:body    (->> html

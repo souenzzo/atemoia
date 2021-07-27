@@ -19,9 +19,15 @@
 
 (defn ui-root
   []
-  (let [{:keys [error? todos]
-         :as   st} @state]
+  (let [{:keys [error? todos]} @state]
     [:div
+     [:p "This is a sample clojure app to demonstrate how to use "
+      [:a {:href "https://clojure.org/guides/tools_build"}
+       "tools.build"]
+      " to create and deploy a full-stack clojure app."]
+     [:p "Checkout our "
+      [:a {:href "https://github.com/souenzzo/atemoia"}
+       "README"]]
      [:ul
       (for [{:todo/keys [id note]} todos]
         [:li {:key id}

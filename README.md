@@ -62,3 +62,9 @@ The function will
 - Write the `pom` file and others `jar` metadata files in `target/classes/META-INF`
 - Compile every clojure namespaces found in `src` and every required dependency into `target/classes`
 - Create a uberjar file that has `atemoia.server` and entrypoint.
+
+---      
+
+In case of doubts or errors, report an issue
+
+If you prefer talk [directly with me](https://t.me/souenzzo)
