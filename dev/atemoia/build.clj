@@ -5,11 +5,11 @@
 
 (def lib 'atemoia/app)
 (def class-dir "target/classes")
+(def uber-file "target/atemoia.jar")
 
 (defn -main
   [& _]
-  (let [uber-file (format "target/atemoia.jar")
-        basis (b/create-basis {:project "deps.edn"})]
+  (let [basis (b/create-basis {:project "deps.edn"})]
     (b/delete {:path "target"})
     (shadow.server/start!)
     (shadow.api/release :atemoia)

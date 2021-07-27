@@ -2,32 +2,63 @@
 
 > A simple full-stack clojure app
 
+Learn more about [clojure project structure](https://souenzzo.com.br/creating-a-clojure-project.html).
+
+Checkout the [live demo](https://atemoia.herokuapp.com/).
+
 This is a simple fullstack clojure application developed to explain how to deploy a clojure app.
 
-Before start, I recommend you to be familiar with
-the [clojure project structure](https://souenzzo.com.br/creating-a-clojure-project.html).
+# Overview
 
-Checkout the [running app](https://atemoia.herokuapp.com/).
+It consists in a backend in `src/atemoia/server.clj`. This backend has JSON and HTML endpoints
 
-# Dependencies 
+A frontend in `src/atemoia/client.cljs`. This is a react app that interacts with the JSON endpoints There is a build
+script in `dev/atemoia/build.clj`. This is invoked via `clj -A:dev -M -m atemoia.build`
 
-## Clojure
+The build script compiles clojurescript to a minified bundle and compiles clojure to java classes. Then generates a JAR
+file that include both java class files and javascript static assets.
 
-- `com.github.seancorfield/next.jdbc` - Connect with the postgres database
-- `hiccup/hiccup` - Generate HTML from Clojure
-- `io.pedestal/pedestal.jetty` - Expose pedestal service via jetty
-- `io.pedestal/pedestal.service` - HTTP Abstraction for clojure that extend ring protocol
-- `org.clojure/clojure` - Clojure itself
-- `org.postgresql/postgresql` - Connect JDBC with postgres
-- `io.github.clojure/tools.build` - Tool to generate the jar fiel
-- `reagent/reagent` - React wrapper for clojure
-- `com.google.guava/guava` - Solve some version confluct. Try to remove in the future
-- `thheller/shadow-cljs` - Clojurescript builder/compiler
+There is a `Dockerfile` that uses `node:alpine` image to install `npm` dependencies, then use `clojure:alpine` image to
+compile and create the `jar` file, then create an `openjdk:alpine` image with just the jar file as "final product".
 
-## Others
+Heroku operates in `container` mode, as described in `heroku.yml`. There is a github integration that triggers the
+deploy
 
-- docker -
-- jvm - 
-- react -
-- npm - 
-- node - 
+# Developing
+
+Before start, install your npm dependencies with `npm install`
+
+You can start your REPL using `clj -A:dev`
+
+In the repl, `(require atemoia.server)` then `(in-ns 'atemoia.server)`. Call `(dev-main)` and after some seconds the
+application should be available in localhost:8080.
+
+You will need a postgres running
+
+```shell
+docker run --name my-postgres --env=POSTGRES_PASSWORD=postgres --rm -p 5432:5432 postgres:alpine
+```
+
+You can change `src/atemoia/server.clj` and run `(require atemoia.server :reaload)` to see your changes.
+
+Some changes (in the HTTP server) will need to call `(dev-main)` again
+
+Changes in `src/atemoia/client.cljs` are hot reloaded.
+
+You will never need to restart your REPL.
+
+# atemoia.build
+
+This namespace has a single `-main` function that when called, generate a `jar` file in `target/atemoia.jar`.
+
+The `jar` contains everything that is listed in `target/classes`. This directory will only exists after you call this
+function.
+
+The function will
+
+- Delete the `target` dir
+- Start `shadow-cljs` server, generate a production bundle of `atemoia.client` in `target/classes/public`, as described
+  in `shadow-cljs.edn`, stop `shadow-cljs` server
+- Write the `pom` file and others `jar` metadata files in `target/classes/META-INF`
+- Compile every clojure namespaces found in `src` and every required dependency into `target/classes`
+- Create a uberjar file that has `atemoia.server` and entrypoint.
