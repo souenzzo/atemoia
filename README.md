@@ -39,7 +39,7 @@ You will need a postgresql server running
 docker run --name my-postgres --env=POSTGRES_PASSWORD=postgres --rm -p 5432:5432 postgres:alpine
 ```
 
-You can change `src/atemoia/server.clj` and run `(require atemoia.server :reload)` to see your changes.
+You can change `src/atemoia/server.clj` and run `(require 'atemoia.server :reload)` to see your changes.
 
 Some changes (in the HTTP server) will need to call `(dev-main)` again
 
