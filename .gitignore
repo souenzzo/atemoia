@@ -1,5 +1,10 @@
+node_modules/
 target/
+.DS_Store
 .cpcache/
+.calva/
+.lsp/
+.shadow-cljs/
 .idea/
 *.iml
 .nrepl-port
