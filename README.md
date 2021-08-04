@@ -63,6 +63,13 @@ The function will
 - Compile every clojure namespaces found in `src` and every required dependency into `target/classes`
 - Create a uberjar file that has `atemoia.server` and entrypoint.
 
+Create a uberjar is not a complex thing. It's simply `zip` the `target/classes` folder into a `.jar`, keeping it tree structure.
+
+You can open the jar and compare with `target/classes` to have a better understanding of this process (they should be equal)
+
+
+
+
 ---      
 
 In case of doubts or errors, report an issue
