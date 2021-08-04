@@ -30,16 +30,16 @@ Before start, install your npm dependencies with `npm install`
 
 You can start your REPL using `clj -A:dev`
 
-In the repl, `(require atemoia.server)` then `(in-ns 'atemoia.server)`. Call `(dev-main)` and after some seconds the
+In the repl, `(require '(atemoia.server))` then `(in-ns 'atemoia.server)`. Call `(dev-main)` and after some seconds the
 application should be available in localhost:8080.
 
-You will need a postgres running
+You will need a postgresql server running
 
 ```shell
 docker run --name my-postgres --env=POSTGRES_PASSWORD=postgres --rm -p 5432:5432 postgres:alpine
 ```
 
-You can change `src/atemoia/server.clj` and run `(require atemoia.server :reaload)` to see your changes.
+You can change `src/atemoia/server.clj` and run `(require atemoia.server :reload)` to see your changes.
 
 Some changes (in the HTTP server) will need to call `(dev-main)` again
 
