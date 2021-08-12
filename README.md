@@ -68,6 +68,19 @@ Create a uberjar is not a complex thing. It's simply `zip` the `target/classes` 
 You can open the jar and compare with `target/classes` to have a better understanding of this process (they should be equal)
 
 
+# FAQ
+
+- How long will my bullet point remain here?
+
+Up to 10 elements. This [ugly code](https://github.com/souenzzo/atemoia/blob/master/src/atemoia/server.clj#L51-L58) do that. Is possible to to that with a single call of `jdbc/execute!`. A pull request is welcome.
+
+- Why pedestal?
+
+Is the one that I like to use. The main feature that I like that no other http server does is the `io.pedestal.test/response-for` helper.
+
+- Why not datomic?
+
+The idea is be easy to deploy on heroku. Heroku gives me Postgres, so I'm ok to use it.
 
 
 ---      
