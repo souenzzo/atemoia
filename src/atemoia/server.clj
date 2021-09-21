@@ -55,7 +55,7 @@
       (when (< 10 (:count (first (jdbc/execute! conn
                                    ["SELECT count(id) FROM todo"]))))
         (jdbc/execute! conn
-          ["DELETE FROM todo WHERE id IN (SELECT min(id) FROM todo)"])))
+          ["DELETE FROM todo WHERE id = (SELECT min(id) FROM todo)"])))
     {:status 201}))
 
 (defn install-schema
