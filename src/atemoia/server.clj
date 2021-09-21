@@ -49,13 +49,17 @@
                (json/parse-stream true)
                :note)]
     (jdbc/with-transaction [conn (jdbc/get-connection {:jdbcUrl jdbc-url})]
-      (jdbc/execute! conn
-        ["INSERT INTO todo (note) VALUES (?)"
-         note])
-      (when (< 10 (:count (first (jdbc/execute! conn
-                                   ["SELECT count(id) FROM todo"]))))
+      (if (> 10 (->> ["SELECT count(id) FROM todo"]
+                  (jdbc/execute! conn)
+                  first
+                  :count))
         (jdbc/execute! conn
-          ["DELETE FROM todo WHERE id = (SELECT min(id) FROM todo)"])))
+          ["INSERT INTO todo (note) VALUES (?)"
+           note])
+        (do (jdbc/execute! conn
+              ["DELETE FROM todo WHERE id IN (SELECT id FROM todo ORDER BY id ASC LIMIT 10)"])
+            (jdbc/execute! conn
+              ["INSERT INTO todo (note) VALUES (?)" note]))))
     {:status 201}))
 
 (defn install-schema
