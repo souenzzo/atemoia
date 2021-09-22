@@ -36,13 +36,13 @@
       {:on-submit (fn [evt]
                     (.preventDefault evt)
                     (let [el (-> ^js evt
-                               ^js .-target
-                               ^js .-elements
-                               ^js .-abc)
+                               .-target
+                               .-elements
+                               .-note)
                           json-body #js{:note (.-value el)}
-                          unlock (fn [clen?]
+                          unlock (fn [success?]
                                    (fetch-todos)
-                                   (when clen?
+                                   (when success?
                                      (set! (.-value el) ""))
                                    (set! (.-disabled el) false))]
                       (set! (.-disabled el) true)
@@ -52,11 +52,12 @@
                                  (unlock (.-ok response))))
                         (.catch (fn [ex]
                                   (unlock false))))))}
-      [:input {:name "abc"}]]
-     (when error? [:button {:on-click (fn []
-                                        (js/fetch "/install-schema"
-                                          #js{:method "POST"}))}
-                   "install schema"])]))
+      [:input {:name "note"}]]
+     (when error?
+       [:button {:on-click (fn []
+                             (js/fetch "/install-schema"
+                               #js{:method "POST"}))}
+        "install schema"])]))
 
 (defn start
   []

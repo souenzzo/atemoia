@@ -16,7 +16,7 @@
 (set! *warn-on-reflection* true)
 
 (defn index
-  [{::keys [jdbc-database-url]}]
+  [_]
   (let [html [:html
               [:head
                [:meta {:charset (str StandardCharsets/UTF_8)}]
@@ -48,14 +48,10 @@
                io/reader
                (json/parse-stream true)
                :note)]
-    (jdbc/with-transaction [conn (jdbc/get-connection {:jdbcUrl jdbc-url})]
-      (jdbc/execute! conn
-        ["INSERT INTO todo (note) VALUES (?)"
-         note])
-      (when (< 10 (:count (first (jdbc/execute! conn
-                                   ["SELECT count(id) FROM todo"]))))
-        (jdbc/execute! conn
-          ["DELETE FROM todo WHERE id IN (SELECT min(id) FROM todo)"])))
+    (jdbc/execute! {:jdbcUrl jdbc-url}
+      ["INSERT INTO todo (note) VALUES (?);
+        DELETE FROM todo WHERE id IN (SELECT id FROM todo ORDER BY id DESC OFFSET 10)"
+       note])
     {:status 201}))
 
 (defn install-schema
