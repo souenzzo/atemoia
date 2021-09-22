@@ -27,7 +27,7 @@
                 {:src "/atemoia/main.js"}]]]]
     {:body    (->> html
                 (h/html {:mode :html})
-                (str "<DOCTYPE html>\n"))
+                   (str "<!DOCTYPE html>\n"))
      :headers {"Content-Security-Policy" ""
                "Content-Type"            (mime/default-mime-types "html")}
      :status  200}))
