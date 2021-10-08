@@ -52,7 +52,9 @@
                                  (unlock (.-ok response))))
                         (.catch (fn [ex]
                                   (unlock false))))))}
-      [:input {:name "note"}]]
+      [:label
+       "note: "
+       [:input {:name "note"}]]]
      (when error?
        [:button {:on-click (fn []
                              (js/fetch "/install-schema"

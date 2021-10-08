@@ -1,25 +1,43 @@
 (ns atemoia.server
   (:gen-class)
-  (:require [clojure.edn :as edn]
+  (:require [cheshire.core :as json]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]
+            [clojure.string :as string]
             [hiccup2.core :as h]
             [io.pedestal.http :as http]
-            [ring.util.mime-type :as mime]
-            [next.jdbc :as jdbc]
-            [io.pedestal.interceptor :as interceptor]
             [io.pedestal.http.route :as route]
-            [cheshire.core :as json]
-            [clojure.java.io :as io]
-            [clojure.string :as string])
-  (:import (java.nio.charset StandardCharsets)
-           (java.net URI)))
+            [io.pedestal.interceptor :as interceptor]
+            [next.jdbc :as jdbc])
+  (:import (java.net URI)))
 
 (set! *warn-on-reflection* true)
+
+(defn database->jdbc-url
+  [database-url]
+  (let [uri (URI/create database-url)
+        creds (.getUserInfo uri)
+        base-uri (URI. "postgresql" nil
+                   (.getHost uri) (.getPort uri) (.getPath uri)
+                   (string/join "&"
+                     (map (partial string/join "=")
+                       (zipmap ["user" "password"] (string/split creds #":" 2))))
+                   nil)]
+    (str (URI. "jdbc" (str base-uri) nil))))
 
 (defn index
   [_]
   (let [html [:html
+              {:lang "en"}
               [:head
-               [:meta {:charset (str StandardCharsets/UTF_8)}]
+               [:meta {:charset "UTF-8"}]
+               [:link {:rel "icon" :href "data:"}]
+               [:meta {:name    "viewport"
+                       :content "width=device-width, initial-scale=1.0"}]
+               [:meta {:name    "theme-color"
+                       :content "#000000"}]
+               [:meta {:name    "description"
+                       :content "A simple full-stack clojure app"}]
                [:title "atemoia"]]
               [:body
                [:div {:id "atemoia"} "loading ..."]
@@ -27,36 +45,38 @@
                 {:src "/atemoia/main.js"}]]]]
     {:body    (->> html
                 (h/html {:mode :html})
-                   (str "<!DOCTYPE html>\n"))
+                (str "<!DOCTYPE html>\n"))
      :headers {"Content-Security-Policy" ""
-               "Content-Type"            (mime/default-mime-types "html")}
+               "Content-Type"            "text/html"}
      :status  200}))
 
 (defn list-todo
-  [{::keys [jdbc-url]}]
-  (let [response (jdbc/execute! {:jdbcUrl jdbc-url}
-                   ["SELECT * FROM todo"])]
-    {:body    (->> response
-                (json/generate-string))
-     :headers {"Content-Type" (mime/default-mime-types "json")}
-     :status  200}))
+  [{::keys [atm-conn]}]
+  (try
+    (let [response (jdbc/execute! atm-conn
+                     ["SELECT * FROM todo"])]
+      {:body    (json/generate-string response)
+       :headers {"Content-Type" "application/json"}
+       :status  200})
+    (catch Throwable ex
+      (.printStackTrace ex))))
 
 (defn create-todo
-  [{::keys [jdbc-url]
+  [{::keys [atm-conn]
     :keys  [body]}]
   (let [note (some-> body
                io/reader
                (json/parse-stream true)
                :note)]
-    (jdbc/execute! {:jdbcUrl jdbc-url}
+    (jdbc/execute! atm-conn
       ["INSERT INTO todo (note) VALUES (?);
         DELETE FROM todo WHERE id IN (SELECT id FROM todo ORDER BY id DESC OFFSET 10)"
        note])
     {:status 201}))
 
 (defn install-schema
-  [{::keys [jdbc-url]}]
-  (jdbc/execute! {:jdbcUrl jdbc-url}
+  [{::keys [atm-conn]}]
+  (jdbc/execute! atm-conn
     ["CREATE TABLE todo (id serial, note text)"])
   {:status 202})
 
@@ -66,21 +86,8 @@
      ["/todo" :post create-todo]
      ["/install-schema" :post install-schema]})
 
-
 (defonce state
   (atom nil))
-
-(defn database->jdbc-url
-  [database-url]
-  (let [jdbc-url* (URI/create database-url)
-        creds (.getUserInfo jdbc-url*)
-        [u p] (string/split creds #":" 2)
-        jdbc-url (str "jdbc:postgresql://"
-                   (.getHost jdbc-url*)
-                   ":" (.getPort jdbc-url*)
-                   (.getPath jdbc-url*)
-                   "?user=" u "&password=" p)]
-    jdbc-url))
 
 (defn -main
   [& _]
@@ -98,8 +105,7 @@
              ::http/host          "0.0.0.0"
              ::http/type          :jetty
              ::http/routes        (fn []
-                                    (-> @#'routes
-                                      route/expand-routes))
+                                    (route/expand-routes routes))
              ::http/join?         false}
           http/default-interceptors
           (update ::http/interceptors
@@ -107,7 +113,8 @@
               (interceptor/interceptor {:enter (fn [ctx]
                                                  (-> ctx
                                                    (assoc-in [:request
-                                                              ::jdbc-url]
+                                                              ::atm-conn
+                                                              :jdbcUrl]
                                                      jdbc-url)))})))
           http/dev-interceptors
           http/create-server
