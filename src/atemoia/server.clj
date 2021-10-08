@@ -9,7 +9,9 @@
             [io.pedestal.http.route :as route]
             [io.pedestal.interceptor :as interceptor]
             [next.jdbc :as jdbc])
-  (:import (java.net URI)))
+  (:import (java.net URI)
+           (org.eclipse.jetty.servlet ServletContextHandler)
+           (org.eclipse.jetty.server.handler.gzip GzipHandler)))
 
 (set! *warn-on-reflection* true)
 
@@ -96,14 +98,21 @@
     (swap! state
       (fn [st]
         (some-> st http/stop)
-        (-> {::http/port          port
-             ::http/file-path     "target/classes/public"
-             ::http/resource-path "public"
-             ::http/host          "0.0.0.0"
-             ::http/type          :jetty
-             ::http/routes        (fn []
-                                    (route/expand-routes routes))
-             ::http/join?         false}
+        (-> {::http/port              port
+             ::http/file-path         "target/classes/public"
+             ::http/resource-path     "public"
+             ::http/host              "0.0.0.0"
+             ::http/type              :jetty
+             ::http/routes            (fn []
+                                        (route/expand-routes routes))
+             ::http/join?             false
+             ::http/container-options {:context-configurator (fn [^ServletContextHandler context]
+                                                               (let [gzip-handler (GzipHandler.)]
+                                                                 (.addIncludedMethods gzip-handler (into-array ["GET" "POST"]))
+                                                                 (.setExcludedAgentPatterns gzip-handler (make-array String 0))
+                                                                 (.setGzipHandler context gzip-handler))
+                                                               context)}}
+
           http/default-interceptors
           (update ::http/interceptors
             (partial cons

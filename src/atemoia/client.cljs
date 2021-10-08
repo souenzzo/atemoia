@@ -28,10 +28,6 @@
      [:p "Checkout our "
       [:a {:href "https://github.com/souenzzo/atemoia"}
        "README"]]
-     [:ul
-      (for [{:todo/keys [id note]} todos]
-        [:li {:key id}
-         note])]
      [:form
       {:on-submit (fn [evt]
                     (.preventDefault evt)
@@ -59,7 +55,11 @@
        [:button {:on-click (fn []
                              (js/fetch "/install-schema"
                                #js{:method "POST"}))}
-        "install schema"])]))
+        "install schema"])
+     [:ul
+      (for [{:todo/keys [id note]} todos]
+        [:li {:key id}
+         note])]]))
 
 (defn start
   []
