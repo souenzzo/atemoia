@@ -52,14 +52,11 @@
 
 (defn list-todo
   [{::keys [atm-conn]}]
-  (try
-    (let [response (jdbc/execute! atm-conn
-                     ["SELECT * FROM todo"])]
-      {:body    (json/generate-string response)
-       :headers {"Content-Type" "application/json"}
-       :status  200})
-    (catch Throwable ex
-      (.printStackTrace ex))))
+  (let [response (jdbc/execute! atm-conn
+                   ["SELECT * FROM todo"])]
+    {:body    (json/generate-string response)
+     :headers {"Content-Type" "application/json"}
+     :status  200}))
 
 (defn create-todo
   [{::keys [atm-conn]
