@@ -185,5 +185,9 @@ target/
 
 > Build script.
 
+> Dockerizing
+
+> Heroku
+
 > We are done
 

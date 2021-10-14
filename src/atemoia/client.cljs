@@ -8,14 +8,16 @@
   []
   (-> (js/fetch "/todo")
     (.then (fn [response]
-             (if (.-ok response)
-               (.json response)
-               (swap! state assoc :error? true))))
-    (.then (fn [{:keys [error?]
-                 :as   todos}]
-             (when-not error?
-               (swap! state assoc :todos (js->clj todos
-                                           :keywordize-keys true)))))))
+             (when-not (.-ok response)
+               (throw (ex-info (.-statusText response)
+                        {:response response})))
+             (swap! state dissoc :error)
+             (.json response)))
+    (.then (fn [todos]
+             (swap! state assoc :todos (js->clj todos
+                                         :keywordize-keys true))))
+    (.catch (fn [ex]
+              (swap! state assoc :error (ex-message ex))))))
 
 (defn ui-root
   []
@@ -29,9 +31,9 @@
       [:a {:href "https://github.com/souenzzo/atemoia"}
        "README"]]
      [:form
-      {:on-submit (fn [evt]
+      {:on-submit (fn [^js evt]
                     (.preventDefault evt)
-                    (let [el (-> ^js evt
+                    (let [el (-> evt
                                .-target
                                .-elements
                                .-note)
