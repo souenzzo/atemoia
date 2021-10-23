@@ -7,6 +7,7 @@ mkdir atemoia
 cd atemoia
 echo {} > deps.edn
 mkdir dev src
+## git add deps.edn
 ```
 
 `deps.edn`
@@ -27,14 +28,21 @@ mkdir dev src
                                thheller/shadow-cljs          {:mvn/version "2.15.2"}}}}}
 ```
 
+start the REPL:
+
+```
+clj -A:dev
+```
+
 # Create a backend
 
 ```shell
 mkdir src/atemoia
 echo '(ns atemoia.server)' > src/atemoia/server.clj
+## git add src/atemoia/server.clj
 ```
 
-> A minimium http server
+> A minimum http server
 `server.clj`
 
 ```clojure
@@ -61,9 +69,19 @@ echo '(ns atemoia.server)' > src/atemoia/server.clj
            ::http/routes routes
            ::http/join?  false}
         http/default-interceptors
+        http/dev-interceptors
         http/create-server
         http/start))))
 ```
+
+run in the REPL
+
+```clojure
+(require 'atemoia.server :reload)
+(atemoia.server/-main)
+```
+
+connect to localhost:8080
 
 > Add hiccup
 `server.clj`
@@ -91,6 +109,15 @@ echo '(ns atemoia.server)' > src/atemoia/server.clj
 
 ```
 
+run in the REPL
+
+```clojure
+(require 'atemoia.server :reload)
+(atemoia.server/-main)
+```
+
+connect to localhost:8080
+
 # Add cljs support
 
 ```shell
@@ -98,6 +125,7 @@ echo {} > package.json
 echo {} > shadow-cljs.edn
 echo '(ns atemoia.client)' > src/atemoia/client.cljs
 npm install --save react react-dom --save-dev shadow-cljs@2.15.2
+## git add package.json shadow-cljs.edn package-lock.json src/atemoia/client.cljs 
 ```
 
 `shadow-cljs.edn`
@@ -115,6 +143,7 @@ npm install --save react react-dom --save-dev shadow-cljs@2.15.2
 
 ```clojure
 (ns atemoia.client)
+
 (defn start
   []
   (prn :start))
@@ -139,6 +168,13 @@ npm install --save react react-dom --save-dev shadow-cljs@2.15.2
   (-main))
 ```
 
+run in the REPL
+
+```clojure
+(require 'atemoia.server :reload)
+(atemoia.server/dev-main)
+```
+
 > run and see the output
 
 ```
@@ -146,6 +182,9 @@ target/
 └── classes
     └── public
         └── atemoia
+            ├── cljs-runtime 
+            │    ├── atemoia.client.js
+            │    ...      
             ├── main.js
             └── manifest.edn
 ```
@@ -155,16 +194,22 @@ target/
 `server.cljs`
 
 ```clojure
+;; inside -main, add `::http/file-path` key
 (-> {::http/port      8080
      ::http/type      :jetty
      ::http/routes    routes
      ::http/file-path "target/classes/public"
-     ::http/join?     false})
+     ::http/join?     false}
+  http/default-interceptors
+  http/dev-interceptors
+  http/create-server
+  http/start)
 ```
 
 - Now we can require our cljs
 
 ```clojure
+;; inside index
 [:body
  [:div
   {:id "atemoia"}
@@ -173,7 +218,83 @@ target/
   {:src "/atemoia/main.js"}]]
 ```
 
+this will require `/atemoia/main.js` from the browser the server will receive `/atemoia/main.js`, append with
+the `file-path` and search for `target/classes/public/atemoia/main.js`
+if it find, it will return. if not, will return 404.
+
+> Minimal reagent UI
+
+```clojure
+(ns atemoia.client
+  (:require [reagent.core :as r]
+    [reagent.dom :as rd]))
+
+(defonce *state
+  (r/atom {:n 0}))
+
+(defn ui-root
+  []
+  [:button {:on-click (swap! *state :n inc)} (str @*state)])
+
+(defn start
+  []
+  (some->> (js/document.getElementById "atemoia")
+    (rd/render [ui-root])))
+
+(defn after-load
+  []
+  (some->> (js/document.getElementById "atemoia")
+    (rd/render [ui-root])))
+```
+
 > A todo list in UI-only
+
+Let's edit our `atemoia.client` file
+
+Here a basic todo-app
+
+```clojure
+
+(ns atemoia.client
+  (:require [reagent.core :as r]
+    [reagent.dom :as rd]))
+
+(defonce *state
+  (r/atom {:todos []}))
+
+(defn ui-root
+  []
+  (let [{:keys [todos]} @*state]
+    [:div
+     [:form
+      {:on-submit (fn [^js evt]
+                    (.preventDefault evt)
+                    (let [el (-> evt
+                               .-target
+                               .-elements
+                               .-note)]
+                      (swap! *state update :todos (fn [todos]
+                                                    (conj todos
+                                                      {:todo/id   (count todos)
+                                                       :todo/note (.-value el)})))
+                      (set! (.-value el) "")))}
+      [:label
+       "note: " [:input {:name "note"}]]]
+     [:ul
+      (for [{:todo/keys [id note]} todos]
+        [:li {:key id}
+         note])]]))
+
+(defn start
+  []
+  (some->> (js/document.getElementById "atemoia")
+    (rd/render [ui-root])))
+
+(defn after-load
+  []
+  (some->> (js/document.getElementById "atemoia")
+    (rd/render [ui-root])))
+```
 
 > My first endpoint
 
