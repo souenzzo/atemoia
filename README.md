@@ -72,7 +72,7 @@ You can open the jar and compare with `target/classes` to have a better understa
 
 - How long will my bullet point remain here?
 
-Up to 10 elements. This [code](https://github.com/souenzzo/atemoia/blob/master/src/atemoia/server.clj#L53) do that.
+Up to 10 elements. This [code](https://github.com/souenzzo/atemoia/blob/master/src/atemoia/server.clj#L72) do that.
 
 - Why pedestal?
 
