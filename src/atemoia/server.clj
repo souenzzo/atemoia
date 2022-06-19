@@ -1,7 +1,6 @@
 (ns atemoia.server
   (:gen-class)
   (:require [cheshire.core :as json]
-            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as string]
             [hiccup2.core :as h]
@@ -19,8 +18,8 @@
   [database-url]
   (let [uri (URI/create database-url)
         creds (.getUserInfo uri)
-        old-query (string/split (.getQuery uri)
-                    #"&")
+        old-query (some-> (.getQuery uri)
+                    (string/split #"&"))
         auth-query (map (partial string/join "=")
                      (zipmap ["user" "password"] (string/split creds #":" 2)))
         base-uri (URI. "postgresql" nil

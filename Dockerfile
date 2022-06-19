@@ -3,20 +3,20 @@ RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia package.json package-lock.json ./
-RUN npm ci --production
+RUN npm --audit=false --ignore-scripts=true --fund=false ci
 
-FROM clojure:openjdk-17-tools-deps-alpine AS clojure
-RUN apk add git
+FROM clojure:openjdk-18-tools-deps-alpine AS clojure
+RUN apk add git nodejs
 RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia ./deps.edn ./
-RUN clojure -A:dev -Spath && clojure -Spath
+RUN clojure -A:dev -P && clojure -P
 COPY --chown=atemoia . .
 COPY --from=node --chown=atemoia /home/atemoia/node_modules node_modules
 RUN clojure -A:dev -M -m atemoia.build
 
-FROM openjdk:17-jdk-alpine
+FROM openjdk:18-jdk-alpine
 RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
