@@ -30,8 +30,8 @@ Before start, install your npm dependencies with `npm install`
 
 You can start your REPL using `clj -A:dev`
 
-In the repl, `(require '(atemoia.server))` then `(in-ns 'atemoia.server)`. Call `(dev-main)` and after some seconds the
-application should be available in localhost:8080.
+In the repl, `(require 'atemoia.server)` then `(in-ns 'atemoia.server)`. Call `(dev-main)` and after some seconds the
+application should be available in [localhost:8080](http://localhost:8080).
 
 You will need a postgresql server running
 

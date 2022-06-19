@@ -10,8 +10,7 @@
             [next.jdbc :as jdbc])
   (:import (java.net URI)
            (org.eclipse.jetty.server.handler.gzip GzipHandler)
-           (org.eclipse.jetty.servlet ServletContextHandler)
-           (java.util Properties)))
+           (org.eclipse.jetty.servlet ServletContextHandler)))
 
 (set! *warn-on-reflection* true)
 
@@ -26,7 +25,7 @@
         base-uri (URI. "postgresql" nil
                    (.getHost uri) (.getPort uri) (.getPath uri)
                    (string/join "&" (concat old-query auth-query))
-                   nil)]
+                   (.getFragment uri))]
     (str (URI. "jdbc" (str base-uri) nil))))
 
 (defn index
@@ -47,17 +46,7 @@
                {:style {:min-height "100%"}}
                [:div {:id "atemoia"} "loading ..."]
                [:script
-                {:src "/atemoia/main.js"}]
-               [:footer
-                {:style {:position "fixed"
-                         :bottom   "0"
-                         :width    "100%"}}
-                [:pre "v: " (let [p (Properties.)]
-                              (some-> "META-INF/maven/atemoia/app/pom.properties"
-                                io/resource
-                                io/reader
-                                (->> (.load p)))
-                              (get p "version" "main"))]]]]]
+                {:src "/atemoia/main.js"}]]]]
     {:body    (->> html
                 (h/html {:mode :html})
                 (str "<!DOCTYPE html>\n"))
@@ -97,14 +86,10 @@
      ["/todo" :post create-todo]
      ["/install-schema" :post install-schema]})
 
-(defonce state
-  (atom nil))
-
-(defn service
+(defn create-service
   [env]
   (-> env
-    (assoc ::http/resource-path "public"
-           ::http/secure-headers {:content-security-policy-settings ""}
+    (assoc ::http/secure-headers {:content-security-policy-settings ""}
            ::http/routes (fn []
                            (route/expand-routes routes)))
     http/default-interceptors
@@ -113,6 +98,9 @@
         (interceptor/interceptor {:enter (fn [ctx]
                                            (-> ctx
                                              (update :request merge env)))})))))
+
+(defonce state
+  (atom nil))
 
 (defn -main
   [& _]
@@ -137,7 +125,7 @@
                                                                  (.setExcludedAgentPatterns gzip-handler (make-array String 0))
                                                                  (.setGzipHandler context gzip-handler))
                                                                context)}}
-          service
+          create-service
           http/dev-interceptors
           http/create-server
           http/start)))
@@ -154,7 +142,5 @@
     (apply [:atemoia]))
   (-main))
 
-
 (comment
   (dev-main))
-

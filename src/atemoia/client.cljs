@@ -33,17 +33,17 @@
      [:form
       {:on-submit (fn [^js evt]
                     (.preventDefault evt)
-                    (let [el (-> evt
-                               .-target
-                               .-elements
-                               .-note)
-                          json-body #js{:note (.-value el)}
+                    (let [note-el (-> evt
+                                    .-target
+                                    .-elements
+                                    .-note)
+                          json-body #js{:note (.-value note-el)}
                           unlock (fn [success?]
                                    (fetch-todos)
                                    (when success?
-                                     (set! (.-value el) ""))
-                                   (set! (.-disabled el) false))]
-                      (set! (.-disabled el) true)
+                                     (set! (.-value note-el) ""))
+                                   (set! (.-disabled note-el) false))]
+                      (set! (.-disabled note-el) true)
                       (-> (js/fetch "/todo" #js{:method "POST"
                                                 :body   (js/JSON.stringify json-body)})
                         (.then (fn [response]

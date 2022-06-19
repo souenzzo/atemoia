@@ -38,7 +38,7 @@
   (with-open [*atm-conn (temp-jdbc-database "jdbc:postgresql://127.0.0.1:5432/postgres?user=postgres&password=postgres")]
     (atemoia/install-schema {::atemoia/atm-conn @*atm-conn})
     (let [service-fn (-> {::atemoia/atm-conn @*atm-conn}
-                       atemoia/service
+                       atemoia/create-service
                        http/dev-interceptors
                        http/create-servlet
                        ::http/service-fn)]
