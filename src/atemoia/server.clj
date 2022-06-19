@@ -10,8 +10,8 @@
             [io.pedestal.interceptor :as interceptor]
             [next.jdbc :as jdbc])
   (:import (java.net URI)
-           (org.eclipse.jetty.servlet ServletContextHandler)
-           (org.eclipse.jetty.server.handler.gzip GzipHandler)))
+           (org.eclipse.jetty.server.handler.gzip GzipHandler)
+           (org.eclipse.jetty.servlet ServletContextHandler)))
 
 (set! *warn-on-reflection* true)
 
@@ -19,11 +19,13 @@
   [database-url]
   (let [uri (URI/create database-url)
         creds (.getUserInfo uri)
+        old-query (string/split (.getQuery uri)
+                    #"&")
+        auth-query (map (partial string/join "=")
+                     (zipmap ["user" "password"] (string/split creds #":" 2)))
         base-uri (URI. "postgresql" nil
                    (.getHost uri) (.getPort uri) (.getPath uri)
-                   (string/join "&"
-                     (map (partial string/join "=")
-                       (zipmap ["user" "password"] (string/split creds #":" 2))))
+                   (string/join "&" (concat old-query auth-query))
                    nil)]
     (str (URI. "jdbc" (str base-uri) nil))))
 
@@ -90,8 +92,9 @@
 
 (defn -main
   [& _]
-  (let [port (or (edn/read-string (System/getenv "PORT"))
-               8080)
+  (let [port (-> (or (System/getenv "PORT")
+                   "8080")
+               parse-long)
         database-url (or (System/getenv "DATABASE_URL")
                        "postgres://postgres:postgres@127.0.0.1:5432/postgres")
         jdbc-url (database->jdbc-url database-url)]
@@ -137,3 +140,8 @@
     requiring-resolve
     (apply [:atemoia]))
   (-main))
+
+
+(comment
+  (dev-main))
+

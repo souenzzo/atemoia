@@ -1,16 +1,16 @@
 {:paths   ["src"]
- :deps    {com.github.seancorfield/next.jdbc {:mvn/version "1.2.674"}
+ :deps    {com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}
            hiccup/hiccup                     {:mvn/version "2.0.0-alpha2"}
-           io.pedestal/pedestal.jetty        {:mvn/version "0.5.9"}
-           io.pedestal/pedestal.service      {:mvn/version "0.5.9"}
-           org.clojure/clojure               {:mvn/version "1.10.3"}
-           org.postgresql/postgresql         {:mvn/version "42.2.23"}}
+           io.pedestal/pedestal.jetty        {:mvn/version "0.5.10"}
+           io.pedestal/pedestal.service      {:mvn/version "0.5.10"}
+           org.clojure/clojure               {:mvn/version "1.11.1"}
+           org.postgresql/postgresql         {:mvn/version "42.4.0"}}
  :aliases {:dev {:extra-paths ["dev" "test"]
                  :extra-deps  {io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"
-                                                              :sha     "1e7c019730dc6f9e38793170c8801c5950516b60"}
-                               reagent/reagent               {:mvn/version "1.1.0"}
-                               com.google.guava/guava        {:mvn/version "30.1.1-jre"}
-                               ring/ring-core                {:mvn/version "1.9.2"}
-                               thheller/shadow-cljs          {:mvn/version "2.15.2"}}}}}
+                                                              :sha     "ba1a2bf421838802e7bdefc541b41f57582e53b6"}
+                               reagent/reagent               {:mvn/version "1.1.1"}
+                               com.google.guava/guava        {:mvn/version "31.1-jre"}
+                               ring/ring-core                {:mvn/version "1.9.5"}
+                               thheller/shadow-cljs          {:mvn/version "2.19.3"}}}}}
 
 

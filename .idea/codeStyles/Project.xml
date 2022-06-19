@@ -1,7 +1,7 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
-    <ClojureCodeStyleSettings>{
-  :cursive.formatting/default-only-indent true
-}</ClojureCodeStyleSettings>
+    <ClojureCodeStyleSettings>
+      <option name="defaultOnlyIndent" value="true" />
+    </ClojureCodeStyleSettings>
   </code_scheme>
 </component>
