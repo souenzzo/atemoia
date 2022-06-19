@@ -1,9 +1,7 @@
 (ns atemoia.build
-  (:require [clojure.java.io :as io]
-            [clojure.tools.build.api :as b]
+  (:require [clojure.tools.build.api :as b]
             [shadow.cljs.devtools.api :as shadow.api]
-            [shadow.cljs.devtools.server :as shadow.server]
-            [clojure.java.shell :as sh]))
+            [shadow.cljs.devtools.server :as shadow.server]))
 
 (def lib 'atemoia/app)
 (def class-dir "target/classes")
@@ -12,10 +10,6 @@
 (defn -main
   [& _]
   (let [basis (b/create-basis {:project "deps.edn"})]
-    (clojure.pprint/pprint (into (sorted-map)
-                             (System/getenv)))
-    (clojure.pprint/pprint (.exists (io/file ".git")))
-    (println (:out (sh/sh "ls" "-lah")))
     (b/delete {:path "target"})
     (shadow.server/start!)
     (shadow.api/release :atemoia)
