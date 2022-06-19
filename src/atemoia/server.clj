@@ -31,13 +31,7 @@
 
 (defn index
   [_]
-  (let [version (let [p (Properties.)]
-                  (some-> "META-INF/maven/atemoia/app/pom.properties"
-                    io/resource
-                    io/reader
-                    (->> (.load p)))
-                  (get p "version"))
-        html [:html
+  (let [html [:html
               {:lang "en"}
               [:head
                [:meta {:charset "UTF-8"}]
@@ -50,15 +44,24 @@
                        :content "A simple full-stack clojure app"}]
                [:title "atemoia"]]
               [:body
+               {:style {:min-height "100%"}}
                [:div {:id "atemoia"} "loading ..."]
                [:script
                 {:src "/atemoia/main.js"}]
-               [:pre "v: " version]]]]
+               [:footer
+                {:style {:position "fixed"
+                         :bottom   "0"
+                         :width    "100%"}}
+                [:pre "v: " (let [p (Properties.)]
+                              (some-> "META-INF/maven/atemoia/app/pom.properties"
+                                io/resource
+                                io/reader
+                                (->> (.load p)))
+                              (get p "version" "main"))]]]]]
     {:body    (->> html
                 (h/html {:mode :html})
                 (str "<!DOCTYPE html>\n"))
-     :headers {"Content-Security-Policy" ""
-               "Content-Type"            "text/html"}
+     :headers {"Content-Type" "text/html"}
      :status  200}))
 
 (defn list-todo
@@ -101,6 +104,7 @@
   [env]
   (-> env
     (assoc ::http/resource-path "public"
+           ::http/secure-headers {:content-security-policy-settings ""}
            ::http/routes (fn []
                            (route/expand-routes routes)))
     http/default-interceptors
