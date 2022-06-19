@@ -4,7 +4,6 @@
             [clojure.string :as string]
             [clojure.test :refer [deftest is]]
             [io.pedestal.http :as http]
-            [io.pedestal.interceptor :as interceptor]
             [io.pedestal.test :refer [response-for]]
             [next.jdbc :as jdbc])
   (:import (clojure.lang IDeref)
@@ -12,7 +11,9 @@
            (java.net URI)
            (java.util UUID)))
 
-(defn temp-jdbc-database
+(set! *warn-on-reflection* true)
+
+(defn ^AutoCloseable temp-jdbc-database
   [base-uri]
   (let [uri (URI/create (.getSchemeSpecificPart (URI/create base-uri)))
         new-db (string/replace (str "testdb-" (UUID/randomUUID))
@@ -36,14 +37,9 @@
 (deftest hello
   (with-open [*atm-conn (temp-jdbc-database "jdbc:postgresql://127.0.0.1:5432/postgres?user=postgres&password=postgres")]
     (atemoia/install-schema {::atemoia/atm-conn @*atm-conn})
-    (let [service-fn (-> {::http/routes atemoia/routes}
-                       http/default-interceptors
-                       (update ::http/interceptors
-                         (partial cons (interceptor/interceptor
-                                         {:enter (fn [ctx]
-                                                   (assoc-in ctx [:request ::atemoia/atm-conn]
-                                                     @*atm-conn))})))
-                       #_http/dev-interceptors
+    (let [service-fn (-> {::atemoia/atm-conn @*atm-conn}
+                       atemoia/service
+                       http/dev-interceptors
                        http/create-servlet
                        ::http/service-fn)]
       (is (= []

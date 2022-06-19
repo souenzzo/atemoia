@@ -10,7 +10,8 @@
             [next.jdbc :as jdbc])
   (:import (java.net URI)
            (org.eclipse.jetty.server.handler.gzip GzipHandler)
-           (org.eclipse.jetty.servlet ServletContextHandler)))
+           (org.eclipse.jetty.servlet ServletContextHandler)
+           (java.util Properties)))
 
 (set! *warn-on-reflection* true)
 
@@ -30,7 +31,13 @@
 
 (defn index
   [_]
-  (let [html [:html
+  (let [version (let [p (Properties.)]
+                  (some-> "META-INF/maven/atemoia/app/pom.properties"
+                    io/resource
+                    io/reader
+                    (->> (.load p)))
+                  (get p "version"))
+        html [:html
               {:lang "en"}
               [:head
                [:meta {:charset "UTF-8"}]
@@ -45,7 +52,8 @@
               [:body
                [:div {:id "atemoia"} "loading ..."]
                [:script
-                {:src "/atemoia/main.js"}]]]]
+                {:src "/atemoia/main.js"}]
+               [:pre "v: " version]]]]
     {:body    (->> html
                 (h/html {:mode :html})
                 (str "<!DOCTYPE html>\n"))
@@ -89,6 +97,19 @@
 (defonce state
   (atom nil))
 
+(defn service
+  [env]
+  (-> env
+    (assoc ::http/resource-path "public"
+           ::http/routes (fn []
+                           (route/expand-routes routes)))
+    http/default-interceptors
+    (update ::http/interceptors
+      (partial cons
+        (interceptor/interceptor {:enter (fn [ctx]
+                                           (-> ctx
+                                             (update :request merge env)))})))))
+
 (defn -main
   [& _]
   (let [port (-> (or (System/getenv "PORT")
@@ -96,17 +117,15 @@
                parse-long)
         database-url (or (System/getenv "DATABASE_URL")
                        "postgres://postgres:postgres@127.0.0.1:5432/postgres")
-        jdbc-url (database->jdbc-url database-url)]
+        atm-conn-jdbc-url (database->jdbc-url database-url)]
     (swap! state
       (fn [st]
         (some-> st http/stop)
         (-> {::http/port              port
+             ::atm-conn               {:jdbcUrl atm-conn-jdbc-url}
              ::http/file-path         "target/classes/public"
-             ::http/resource-path     "public"
              ::http/host              "0.0.0.0"
              ::http/type              :jetty
-             ::http/routes            (fn []
-                                        (route/expand-routes routes))
              ::http/join?             false
              ::http/container-options {:context-configurator (fn [^ServletContextHandler context]
                                                                (let [gzip-handler (GzipHandler.)]
@@ -114,16 +133,7 @@
                                                                  (.setExcludedAgentPatterns gzip-handler (make-array String 0))
                                                                  (.setGzipHandler context gzip-handler))
                                                                context)}}
-
-          http/default-interceptors
-          (update ::http/interceptors
-            (partial cons
-              (interceptor/interceptor {:enter (fn [ctx]
-                                                 (-> ctx
-                                                   (assoc-in [:request
-                                                              ::atm-conn
-                                                              :jdbcUrl]
-                                                     jdbc-url)))})))
+          service
           http/dev-interceptors
           http/create-server
           http/start)))

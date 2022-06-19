@@ -85,6 +85,6 @@ The idea is be easy to deploy on heroku. Heroku gives me Postgres, so I'm ok to 
 
 ---      
 
-In case of doubts or errors, report an issue
+In case of questions or errors, report an issue
 
 If you prefer talk [directly with me](https://t.me/souenzzo)

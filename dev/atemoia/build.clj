@@ -10,6 +10,8 @@
 (defn -main
   [& _]
   (let [basis (b/create-basis {:project "deps.edn"})]
+    (clojure.pprint/pprint (into (sorted-map)
+                             (System/getenv)))
     (b/delete {:path "target"})
     (shadow.server/start!)
     (shadow.api/release :atemoia)
