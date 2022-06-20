@@ -12,26 +12,28 @@ This is a simple fullstack clojure application developed to explain how to deplo
 
 It consists in a backend in `src/atemoia/server.clj`. This backend has JSON and HTML endpoints
 
-A frontend in `src/atemoia/client.cljs`. This is a react app that interacts with the JSON endpoints There is a build
-script in `dev/atemoia/build.clj`. This is invoked via `clj -A:dev -M -m atemoia.build`
+A frontend in `src/atemoia/client.cljs`. This is a react app interacts with the JSON endpoints.
 
-The build script compiles clojurescript to a minified bundle and compiles clojure to java classes. Then generates a JAR
-file that include both java class files and javascript static assets.
+There is a build script in `dev/atemoia/build.clj`. This is invoked via `clj -A:dev -M -m atemoia.build`
 
-There is a `Dockerfile` that uses `node:alpine` image to install `npm` dependencies, then use `clojure:alpine` image to
-compile and create the `jar` file, then create an `openjdk:alpine` image with just the jar file as "final product".
+The build script compiles clojurescript to a minified bundle and compiles clojure to java classes.
+Then generates a JAR file that include both java class files and javascript static assets.
 
-Heroku operates in `container` mode, as described in `heroku.yml`. There is a github integration that triggers the
-deploy
+There is a `Dockerfile` that uses `node:alpine` image to install `npm` dependencies.
+Then use `clojure:alpine` image to compile and create the `jar` file.
+Then create an `openjdk:alpine` image with just the jar file as "final product".
+
+Heroku operates in `container` mode, as described in `heroku.yml`.
+There is a github integration that triggers the deploy process.
 
 # Developing
 
-Before start, install your npm dependencies with `npm install`
+Before start, install your `npm` dependencies with `npm install`
 
 You can start your REPL using `clj -A:dev`
 
-In the repl, `(require 'atemoia.server)` then `(in-ns 'atemoia.server)`. Call `(dev-main)` and after some seconds the
-application should be available in [localhost:8080](http://localhost:8080).
+In the repl, `(require 'atemoia.server)` then `(in-ns 'atemoia.server)`.
+Call `(dev-main)` and after some seconds the application should be available in [localhost:8080](http://localhost:8080).
 
 You will need a postgresql server running
 
@@ -61,12 +63,13 @@ The function will
   in `shadow-cljs.edn`, stop `shadow-cljs` server
 - Write the `pom` file and others `jar` metadata files in `target/classes/META-INF`
 - Compile every clojure namespaces found in `src` and every required dependency into `target/classes`
-- Create a uberjar file that has `atemoia.server` and entrypoint.
+- Create an uberjar file that has `atemoia.server` as entrypoint.
 
-Create a uberjar is not a complex thing. It's simply `zip` the `target/classes` folder into a `.jar`, keeping it tree structure.
+Uberjar's are not a complex thing. It's simply `zip` the `target/classes` folder into a `.jar`, keeping it tree
+structure.
 
-You can open the jar and compare with `target/classes` to have a better understanding of this process (they should be equal)
-
+You can open the jar and compare with `target/classes` to have a better understanding of this process.
+They should be equal.
 
 # FAQ
 
@@ -76,14 +79,14 @@ Up to 10 elements. This [code](https://github.com/souenzzo/atemoia/blob/main/src
 
 - Why pedestal?
 
-Is the one that I like to use. The main feature that I like that no other http server does is the `io.pedestal.test/response-for` helper.
+Is the one that I like to use. The main feature that I like that no other http server does is
+the `io.pedestal.test/response-for` helper.
 
 - Why not datomic?
 
-The idea is be easy to deploy on heroku. Heroku gives me Postgres, so I'm ok to use it.
+The idea is to be easy to deploy on heroku. Heroku gives me Postgres, so I'm ok to use it.
 
-
----      
+---
 
 In case of questions or errors, report an issue
 
