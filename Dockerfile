@@ -3,7 +3,7 @@ RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia package.json package-lock.json ./
-RUN npm --audit=false --ignore-scripts=true --fund=false ci
+RUN npm --audit=false --ignore-scripts=true --update-notifier=false --fund=false ci
 
 FROM clojure:openjdk-18-tools-deps-alpine AS clojure
 RUN apk add git nodejs

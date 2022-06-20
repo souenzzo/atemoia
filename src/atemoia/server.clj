@@ -85,6 +85,7 @@
   [service-map]
   (-> service-map
     (assoc ::http/secure-headers {:content-security-policy-settings ""}
+           ::http/resource-path "public"
            ::http/routes (fn []
                            (route/expand-routes routes)))
     http/default-interceptors
