@@ -21,4 +21,7 @@ RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --from=clojure --chown=atemoia /home/atemoia/target/atemoia.jar ./
-CMD ["java", "-jar", "atemoia.jar"]
+CMD java \
+  -Datemoia.server.http-port="$PORT" \
+  -Datemoia.server.atm-db-url="$DATBASE_URL" \
+  -jar atemoia.jar
