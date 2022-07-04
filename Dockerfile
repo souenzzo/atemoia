@@ -23,5 +23,5 @@ WORKDIR /home/atemoia
 COPY --from=clojure --chown=atemoia /home/atemoia/target/atemoia.jar ./
 CMD java \
   -Datemoia.server.http-port="$PORT" \
-  -Datemoia.server.atm-db-url="$DATBASE_URL" \
+  -Datemoia.server.atm-db-url="$DATABASE_URL" \
   -jar atemoia.jar
