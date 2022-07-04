@@ -1,6 +1,6 @@
 (ns atemoia.client
-  (:require [reagent.core :as r]
-            [reagent.dom :as rd]))
+  (:require ["react-dom/client" :as rc]
+            [reagent.core :as r]))
 
 (defonce state (r/atom {}))
 
@@ -65,13 +65,17 @@
         [:li {:key id}
          note])]]))
 
-(defn start
-  []
-  (some->> (js/document.getElementById "atemoia")
-    (rd/render [ui-root]))
-  (fetch-todos))
+(defonce *root (atom nil))
 
 (defn after-load
   []
-  (some->> (js/document.getElementById "atemoia")
-    (rd/render [ui-root])))
+  (some-> @*root
+    (.render (r/as-element [ui-root]))))
+
+(defn start
+  []
+  (let [container (js/document.getElementById "atemoia")
+        root (rc/createRoot container)]
+    (fetch-todos)
+    (.render root (r/as-element [ui-root]))
+    (reset! *root root)))
