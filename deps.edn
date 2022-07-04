@@ -8,6 +8,10 @@
            org.postgresql/postgresql         {:mvn/version "42.4.0"}
            org.slf4j/slf4j-simple            {:mvn/version "2.0.0-alpha7"}}
  :aliases {:dev {:extra-paths ["dev" "test"]
+                 :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
+                               "-Dpolyglot.engine.WarnInterpreterOnly=false"
+                               "-Dclojure.core.async.go-checking=true"
+                               "-Dclojure.main.report=stderr"]
                  :extra-deps  {com.google.guava/guava        {:mvn/version "31.1-jre"}
                                com.h2database/h2             {:mvn/version "2.1.212"}
                                io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"

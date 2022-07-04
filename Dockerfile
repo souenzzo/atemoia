@@ -11,10 +11,10 @@ RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia ./deps.edn ./
-RUN clojure -A:dev -P --report stderr && clojure -P --report stderr
+RUN clojure -A:dev -P && clojure -P --report stderr
 COPY --chown=atemoia . .
 COPY --from=node --chown=atemoia /home/atemoia/node_modules node_modules
-RUN clojure -A:dev -M --report stderr -m atemoia.build
+RUN clojure -A:dev -M -m atemoia.build
 
 FROM openjdk:18-jdk-alpine
 RUN adduser -D atemoia
