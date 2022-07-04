@@ -5,10 +5,9 @@
 node_modules/
 target/
 *.iml
+*.md
 .dockerignore
 .gitignore
 .nrepl-port
 Dockerfile
 heroku.yml
-README.md
-TUTORIAL.md

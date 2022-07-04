@@ -17,12 +17,10 @@
     (b/write-pom {:class-dir class-dir
                   :lib       lib
                   :version   "1.0.0"
-                  :basis     basis
-                  :src-dirs  (:paths basis)})
+                  :basis     basis})
     #_(b/copy-dir {:src-dirs   (:paths basis)
                    :target-dir class-dir})
     (b/compile-clj {:basis       basis
-                    :src-dirs    (:paths basis)
                     :class-dir   class-dir})
     (b/uber {:class-dir class-dir
              :main      'atemoia.server

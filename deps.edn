@@ -11,7 +11,7 @@
                  :extra-deps  {com.google.guava/guava        {:mvn/version "31.1-jre"}
                                com.h2database/h2             {:mvn/version "2.1.212"}
                                io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"
-                                                              :sha     "ba1a2bf421838802e7bdefc541b41f57582e53b6"}
+                                                              :sha     "0d20256c40b5a6b6adbcbdf7d0c52cf9e22e994d"}
                                reagent/reagent               {:mvn/version "1.1.1"}
                                ring/ring-core                {:mvn/version "1.9.5"}
-                               thheller/shadow-cljs          {:mvn/version "2.19.3"}}}}}
+                               thheller/shadow-cljs          {:mvn/version "2.19.5"}}}}}
