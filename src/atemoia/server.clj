@@ -92,8 +92,7 @@
     (update ::http/interceptors
       (partial cons
         (interceptor/interceptor {:enter (fn [ctx]
-                                           (-> ctx
-                                             (update :request merge service-map)))})))))
+                                           (update ctx :request merge service-map))})))))
 
 (defonce state
   (atom nil))

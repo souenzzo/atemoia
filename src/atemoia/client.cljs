@@ -22,7 +22,7 @@
 (defn ui-root
   []
   (let [{:keys [error todos]} @state]
-    [:div
+    [:<>
      [:p "This is a sample clojure app to demonstrate how to use "
       [:a {:href "https://clojure.org/guides/tools_build"}
        "tools.build"]
