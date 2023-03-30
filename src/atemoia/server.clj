@@ -2,29 +2,13 @@
   (:gen-class)
   (:require [cheshire.core :as json]
             [clojure.java.io :as io]
-            [clojure.string :as string]
             [hiccup2.core :as h]
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
             [io.pedestal.interceptor :as interceptor]
-            [next.jdbc :as jdbc])
-  (:import (java.net URI)))
+            [next.jdbc :as jdbc]))
 
 (set! *warn-on-reflection* true)
-
-(defn database->jdbc-url
-  [database-url]
-  (let [uri (URI/create database-url)
-        creds (.getUserInfo uri)
-        old-query (some-> (.getQuery uri)
-                    (string/split #"&"))
-        auth-query (map (partial string/join "=")
-                     (zipmap ["user" "password"] (string/split creds #":" 2)))
-        base-uri (URI. "postgresql" nil
-                   (.getHost uri) (.getPort uri) (.getPath uri)
-                   (string/join "&" (concat old-query auth-query))
-                   (.getFragment uri))]
-    (str (URI. "jdbc" (str base-uri) nil))))
 
 (defn index
   [_]
@@ -100,14 +84,13 @@
 (defn -main
   [& _]
   (let [port (Long/getLong "atemoia.server.http-port" 8080)
-        database-url (System/getProperty "atemoia.server.atm-db-url"
-                       "postgres://postgres:postgres@127.0.0.1:5432/postgres")
-        atm-conn-jdbc-url (database->jdbc-url database-url)]
+        atm-db-url (System/getProperty "atemoia.server.atm-db-url"
+                     "jdbc:postgresql://127.0.0.1:5432/postgres?user=postgres&password=postgres")]
     (swap! state
       (fn [st]
         (some-> st http/stop)
         (-> {::http/port      port
-             ::atm-conn       {:jdbcUrl atm-conn-jdbc-url}
+             ::atm-conn       {:jdbcUrl atm-db-url}
              ::http/file-path "target/classes/public"
              ::http/host      "0.0.0.0"
              ::http/type      :jetty

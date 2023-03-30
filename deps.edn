@@ -6,7 +6,8 @@
            org.clojure/clojure               {:mvn/version "1.11.1"}
            org.clojure/core.async            {:mvn/version "1.6.673"}
            org.postgresql/postgresql         {:mvn/version "42.6.0"}
-           org.slf4j/slf4j-simple            {:mvn/version "2.0.7"}}
+           org.slf4j/slf4j-simple            {:mvn/version "2.0.7"}
+           org.eclipse.jetty/jetty-servlet   {:mvn/version "9.4.51.v20230217"}}
  :aliases {:dev {:extra-paths ["dev" "test"]
                  :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
                                "-Dclojure.core.async.go-checking=true"

@@ -1,8 +1,8 @@
 (ns atemoia.client
-  (:require ["react-dom/client" :as rc]
-            [reagent.core :as r]))
+  (:require [reagent.core :as r]
+            [reagent.dom.client :as rdc]))
 
-(defonce state (r/atom {}))
+(defonce *state (r/atom {}))
 
 (defn fetch-todos
   []
@@ -11,17 +11,17 @@
              (when-not (.-ok response)
                (throw (ex-info (.-statusText response)
                         {:response response})))
-             (swap! state dissoc :error)
+             (swap! *state dissoc :error)
              (.json response)))
     (.then (fn [todos]
-             (swap! state assoc :todos (js->clj todos
-                                         :keywordize-keys true))))
+             (swap! *state assoc :todos (js->clj todos
+                                          :keywordize-keys true))))
     (.catch (fn [ex]
-              (swap! state assoc :error (ex-message ex))))))
+              (swap! *state assoc :error (ex-message ex))))))
 
 (defn ui-root
   []
-  (let [{:keys [error todos]} @state]
+  (let [{:keys [error todos]} @*state]
     [:<>
      [:p "This is a sample clojure app to demonstrate how to use "
       [:a {:href "https://clojure.org/guides/tools_build"}
@@ -70,12 +70,12 @@
 (defn after-load
   []
   (some-> @*root
-    (.render (r/as-element [ui-root]))))
+    (rdc/render [ui-root])))
 
 (defn start
   []
   (let [container (js/document.getElementById "atemoia")
-        root (rc/createRoot container)]
+        root (rdc/create-root container)]
     (fetch-todos)
-    (.render root (r/as-element [ui-root]))
+    (rdc/render root [ui-root])
     (reset! *root root)))
