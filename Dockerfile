@@ -5,9 +5,8 @@ WORKDIR /home/atemoia
 COPY --chown=atemoia package.json package-lock.json ./
 RUN npm --audit=false --ignore-scripts=true --update-notifier=false --fund=false ci
 
-FROM clojure:openjdk-18-tools-deps-alpine AS clojure
-RUN apk add git nodejs
-RUN adduser -D atemoia
+FROM clojure:openjdk-19-tools-deps AS clojure
+RUN adduser atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia ./deps.edn ./
@@ -16,8 +15,8 @@ COPY --chown=atemoia . .
 COPY --from=node --chown=atemoia /home/atemoia/node_modules node_modules
 RUN clojure -A:dev -M -m atemoia.build
 
-FROM openjdk:18-jdk-alpine
-RUN adduser -D atemoia
+FROM openjdk:19-jdk
+RUN adduser atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --from=clojure --chown=atemoia /home/atemoia/target/atemoia.jar ./
