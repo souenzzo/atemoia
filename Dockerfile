@@ -3,7 +3,7 @@ RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia package.json package-lock.json ./
-RUN npm --audit=false --ignore-scripts=true --update-notifier=false --fund=false ci
+RUN npm run ci
 
 FROM clojure:openjdk-19-tools-deps AS clojure
 RUN adduser atemoia

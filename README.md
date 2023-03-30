@@ -28,11 +28,11 @@ There is a github integration that triggers the deploy process.
 
 # Developing
 
-Before start, install your `npm` dependencies with `npm install`
+Before start, install your `npm` dependencies with `npm run ci`
 
 You can start your REPL using `clj -A:dev`
 
-In the repl, `(require 'atemoia.server)` then `(in-ns 'atemoia.server)`.
+In the repl, require the server namespace: `(doto 'atemoia.server require in-ns)`.
 Call `(dev-main)` and after some seconds the application should be available in [localhost:8080](http://localhost:8080).
 
 You will need a postgresql server running

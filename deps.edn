@@ -13,8 +13,9 @@
                                "-Dclojure.core.async.go-checking=true"
                                "-Dclojure.main.report=stderr"]
                  :extra-deps  {com.google.guava/guava        {:mvn/version "31.1-jre"}
-                               com.h2database/h2             {:mvn/version "2.1.214"}
+                               org.xerial/sqlite-jdbc        {:mvn/version "3.41.2.1"}
                                io.github.clojure/tools.build {:mvn/version "0.9.4"}
+                               com.h2database/h2             {:mvn/version "2.1.214"}
                                reagent/reagent               {:mvn/version "1.2.0"}
                                ring/ring-core                {:mvn/version "1.9.6"}
                                thheller/shadow-cljs          {:mvn/version "2.22.9"}}}}}
