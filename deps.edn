@@ -8,14 +8,17 @@
            org.postgresql/postgresql         {:mvn/version "42.6.0"}
            org.slf4j/slf4j-simple            {:mvn/version "2.0.7"}
            org.eclipse.jetty/jetty-servlet   {:mvn/version "9.4.51.v20230217"}}
- :aliases {:dev {:extra-paths ["dev" "test"]
-                 :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
-                               "-Dclojure.core.async.go-checking=true"
-                               "-Dclojure.main.report=stderr"]
-                 :extra-deps  {com.google.guava/guava        {:mvn/version "31.1-jre"}
-                               org.xerial/sqlite-jdbc        {:mvn/version "3.41.2.1"}
-                               io.github.clojure/tools.build {:mvn/version "0.9.4"}
-                               com.h2database/h2             {:mvn/version "2.1.214"}
-                               reagent/reagent               {:mvn/version "1.2.0"}
-                               ring/ring-core                {:mvn/version "1.9.6"}
-                               thheller/shadow-cljs          {:mvn/version "2.22.9"}}}}}
+ :aliases {:test-runner {:extra-deps  {io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                                             :git/sha "dfb30dd6605cb6c0efc275e1df1736f6e90d4d73"}}
+                         :main-opts   ["-m" "cognitect.test-runner"]}
+           :dev         {:extra-paths ["dev" "test"]
+                         :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
+                                       "-Dclojure.core.async.go-checking=true"
+                                       "-Dclojure.main.report=stderr"]
+                         :extra-deps  {com.google.guava/guava        {:mvn/version "31.1-jre"}
+                                       org.xerial/sqlite-jdbc        {:mvn/version "3.41.2.1"}
+                                       io.github.clojure/tools.build {:mvn/version "0.9.4"}
+                                       com.h2database/h2             {:mvn/version "2.1.214"}
+                                       reagent/reagent               {:mvn/version "1.2.0"}
+                                       ring/ring-core                {:mvn/version "1.9.6"}
+                                       thheller/shadow-cljs          {:mvn/version "2.22.9"}}}}}

@@ -14,7 +14,7 @@ It consists in a backend in `src/atemoia/server.clj`. This backend has JSON and 
 
 A frontend in `src/atemoia/client.cljs`. This is a react app interacts with the JSON endpoints.
 
-There is a build script in `dev/atemoia/build.clj`. This is invoked via `clj -A:dev -M -m atemoia.build`
+There is a build script in `dev/atemoia/build.clj`. This is invoked via `clj -M:dev -m atemoia.build`
 
 The build script compiles clojurescript to a minified bundle and compiles clojure to java classes.
 Then generates a JAR file that include both java class files and javascript static assets.
@@ -30,7 +30,7 @@ There is a github integration that triggers the deploy process.
 
 Before start, install your `npm` dependencies with `npm run ci`
 
-You can start your REPL using `clj -A:dev`
+You can start your REPL using `clj -M:dev`
 
 In the repl, require the server namespace: `(doto 'atemoia.server require in-ns)`.
 Call `(dev-main)` and after some seconds the application should be available in [localhost:8080](http://localhost:8080).

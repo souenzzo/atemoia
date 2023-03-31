@@ -6,8 +6,7 @@
             [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
             [io.pedestal.interceptor :as interceptor]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]))
+            [next.jdbc :as jdbc]))
 
 (set! *warn-on-reflection* true)
 

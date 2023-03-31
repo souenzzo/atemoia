@@ -31,7 +31,7 @@ mkdir dev src
 start the REPL:
 
 ```
-clj -A:dev
+clj -M:dev
 ```
 
 # Create a backend
