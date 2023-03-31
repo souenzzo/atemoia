@@ -71,6 +71,47 @@ structure.
 You can open the jar and compare with `target/classes` to have a better understanding of this process.
 They should be equal.
 
+# Quick commands
+
+## From shell
+
+Start a REPL as a developer
+
+```shell
+## Install npm deps
+npm run ci
+## Start the repl
+clj -M:dev
+```
+
+Spawn a new JVM and run all tests
+
+```shell
+clj -A:dev:test-runner
+```
+
+Build a production jar
+
+```clojure
+clj -M:dev -m atemoia.build
+```
+
+## From REPL
+
+Start a dev http server
+
+```clojure
+(doto 'atemoia.server require in-ns)
+(dev-main)
+```
+
+Run all tests
+
+```clojure
+(require 'clojure.test)
+(clojure.test/run-all-tests)
+```
+
 # FAQ
 
 - How long will my bullet point remain here?
