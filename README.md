@@ -87,13 +87,13 @@ clj -M:dev
 Spawn a new JVM and run all tests
 
 ```shell
-clj -A:dev:test-runner
+clojure -M:dev:test-runner
 ```
 
 Build a production jar
 
 ```clojure
-clj -M:dev -m atemoia.build
+clojure -M:dev -m atemoia.build
 ```
 
 ## From REPL
