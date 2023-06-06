@@ -101,7 +101,8 @@
           http/start)))
     (println "started: " port)))
 
-(defn dev-main
+(comment
+  #_defn dev-main
   [& _]
   ;; docker run --name my-postgres --env=POSTGRES_PASSWORD=postgres --rm -p 5432:5432 postgres:alpine
   (-> `shadow.cljs.devtools.server/start!
@@ -110,6 +111,9 @@
   (-> `shadow.cljs.devtools.api/watch
     requiring-resolve
     (apply [:atemoia]))
+  (-> `shadow.cljs.devtools.api/watch
+    requiring-resolve
+    (apply [:node-test]))
   (-main))
 
 (comment

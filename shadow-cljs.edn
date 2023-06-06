@@ -1,6 +1,9 @@
 {:deps   {:aliases [:dev]}
- :builds {:atemoia {:target     :browser
-                    :output-dir "target/classes/public/atemoia"
-                    :asset-path "/atemoia"
-                    :modules    {:main {:init-fn atemoia.client/start}}
-                    :devtools   {:after-load atemoia.client/after-load}}}}
+ :builds {:atemoia   {:target     :browser
+                      :output-dir "target/classes/public/atemoia"
+                      :asset-path "/atemoia"
+                      :modules    {:main {:init-fn atemoia.client/start}}
+                      :devtools   {:after-load atemoia.client/after-load}}
+          :node-test {:target    :node-test
+                      :output-to "target/node-test.js"
+                      :autorun   true}}}
