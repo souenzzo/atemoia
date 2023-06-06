@@ -1,5 +1,6 @@
 (ns atemoia.client
   (:require [reagent.core :as r]
+            [atemoia.note :as note]
             [reagent.dom.client :as rdc]))
 
 (defonce *state (r/atom {}))
@@ -37,6 +38,9 @@
                                     .-target
                                     .-elements
                                     .-note)
+                          _ (when-not (note/valid? (.-value note-el))
+                              (.setCustomValidity note-el "Invalid note")
+                              (throw (ex-info "Invalid note" {})))
                           json-body #js{:note (.-value note-el)}
                           unlock (fn [success?]
                                    (fetch-todos)

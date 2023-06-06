@@ -129,3 +129,5 @@ Outras coisas para fazer nesse repositório:
 - Chamar função de view do repl
 - Chamar função de IO do REPL
 - Mudar função view via REPL
+- Encontrar porta do servidor http com 0
+- encontrar query string
