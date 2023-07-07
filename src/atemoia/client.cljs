@@ -40,6 +40,7 @@
                                     .-note)
                           _ (when-not (note/valid? (.-value note-el))
                               (.setCustomValidity note-el "Invalid note")
+                              (.reportValidity note-el)
                               (throw (ex-info "Invalid note" {})))
                           json-body #js{:note (.-value note-el)}
                           unlock (fn [success?]
@@ -56,7 +57,10 @@
                                   (unlock false))))))}
       [:label
        "note: "
-       [:input {:name "note"}]]]
+       [:input {:on-change (fn [evt]
+                             (-> evt .-target
+                               (.setCustomValidity "")))
+                :name "note"}]]]
      (when error
        [:<>
         [:pre (str error)]
