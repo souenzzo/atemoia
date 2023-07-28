@@ -98,12 +98,9 @@
           create-service
           http/dev-interceptors
           http/create-server
-          http/start)))
-    (println "started: " port)))
+          http/start)))))
 
 (comment
-  #_defn dev-main
-  [& _]
   ;; docker run --name my-postgres --env=POSTGRES_PASSWORD=postgres --rm -p 5432:5432 postgres:alpine
   (-> `shadow.cljs.devtools.server/start!
     requiring-resolve
@@ -115,6 +112,3 @@
     requiring-resolve
     (apply [:node-test]))
   (-main))
-
-(comment
-  (dev-main))

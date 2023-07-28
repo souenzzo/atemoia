@@ -6,26 +6,39 @@
 mkdir atemoia
 cd atemoia
 echo {} > deps.edn
-mkdir dev src
-## git add deps.edn
+mkdir dev src test
+git init .
+git add deps.edn
+git commit -am"atemoia"
 ```
 
-`deps.edn`
+Add your deps in `deps.edn`
 
 ```clojure
 {:paths   ["src"]
- :deps    {com.github.seancorfield/next.jdbc {:mvn/version "1.2.674"}
-           hiccup/hiccup                     {:mvn/version "2.0.0-alpha2"}
-           io.pedestal/pedestal.jetty        {:mvn/version "0.5.9"}
-           io.pedestal/pedestal.service      {:mvn/version "0.5.9"}
-           org.clojure/clojure               {:mvn/version "1.10.3"}
-           org.postgresql/postgresql         {:mvn/version "42.2.23"}}
- :aliases {:dev {:extra-paths ["dev"]
-                 :extra-deps  {io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"
-                                                              :sha     "1e7c019730dc6f9e38793170c8801c5950516b60"}
-                               reagent/reagent               {:mvn/version "1.1.0"}
-                               com.google.guava/guava        {:mvn/version "30.1.1-jre"}
-                               thheller/shadow-cljs          {:mvn/version "2.15.2"}}}}}
+ :deps    {com.github.seancorfield/next.jdbc {:mvn/version "1.3.883"}
+           hiccup/hiccup                     {:mvn/version "2.0.0-RC1"}
+           io.pedestal/pedestal.jetty        {:mvn/version "0.6.0"}
+           io.pedestal/pedestal.service      {:mvn/version "0.6.0"}
+           org.clojure/clojure               {:mvn/version "1.11.1"}
+           org.postgresql/postgresql         {:mvn/version "42.6.0"}
+           org.slf4j/slf4j-simple            {:mvn/version "2.0.7"}}
+ :aliases {:test-runner {:extra-deps {io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                                            :git/sha "dfb30dd6605cb6c0efc275e1df1736f6e90d4d73"}}
+                         :main-opts  ["-m" "cognitect.test-runner"]}
+           :dev         {:extra-paths ["dev" "test"]
+                         :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
+                                       "-Dclojure.core.async.go-checking=true"
+                                       "-Dclojure.main.report=stderr"]
+                         :extra-deps  {com.google.guava/guava        {:mvn/version "32.1.1-jre"}
+                                       io.github.clojure/tools.build {:mvn/version "0.9.4"}
+                                       com.h2database/h2             {:mvn/version "2.2.220"}
+                                       reagent/reagent               {:mvn/version "1.2.0"}
+                                       thheller/shadow-cljs          {:mvn/version "2.24.1"}}}}}
+```
+
+```shell
+git commit -am"Add deps in deps.edn file"
 ```
 
 start the REPL:
@@ -39,11 +52,12 @@ clj -M:dev
 ```shell
 mkdir src/atemoia
 echo '(ns atemoia.server)' > src/atemoia/server.clj
-## git add src/atemoia/server.clj
+git add src/atemoia/server.clj
+git commit -am"Creating server namespace"
 ```
 
-> A minimum http server
-`server.clj`
+
+Let's add an minimum http server in `server.clj`
 
 ```clojure
 (ns atemoia.server
@@ -53,10 +67,11 @@ echo '(ns atemoia.server)' > src/atemoia/server.clj
   [_]
   {:body   "Hello"
    :status 200})
+
 (def routes
   `#{["/" :get index]})
 
-(defonce state
+(defonce *state
   (atom nil))
 
 (defn -main
@@ -67,21 +82,30 @@ echo '(ns atemoia.server)' > src/atemoia/server.clj
       (-> {::http/port   8080
            ::http/type   :jetty
            ::http/routes routes
+           ::http/host   "0.0.0.0"
            ::http/join?  false}
         http/default-interceptors
         http/dev-interceptors
         http/create-server
         http/start))))
+
+(comment
+  (-main))
+
 ```
 
-run in the REPL
+```shell
+git commit -am"Minimal HTTP server"
+```
+
+load and start the HTTP server in the REPL
 
 ```clojure
 (require 'atemoia.server :reload)
 (atemoia.server/-main)
 ```
 
-connect to localhost:8080
+connect to [localhost:8080](http://localhost:8080)
 
 > Add hiccup
 `server.clj`
