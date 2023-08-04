@@ -4,6 +4,9 @@
                       :asset-path "/atemoia"
                       :modules    {:main {:init-fn atemoia.client/start}}
                       :devtools   {:after-load atemoia.client/after-load}}
+          :node-server {:target    :node-script
+                        :output-to "target/node-server.js"
+                        :main      atemoia.node-server/start}
           :node-test {:target    :node-test
                       :output-to "target/node-test.js"
                       :autorun   true}}}

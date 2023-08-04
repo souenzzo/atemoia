@@ -111,4 +111,7 @@
   (-> `shadow.cljs.devtools.api/watch
     requiring-resolve
     (apply [:node-test]))
-  (-main))
+  (-main)
+  (-> `shadow.cljs.devtools.api/watch
+    requiring-resolve
+    (apply [:node-server])))
