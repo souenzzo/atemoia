@@ -15,6 +15,7 @@
                                        "-Dclojure.main.report=stderr"]
                          :extra-deps  {com.google.guava/guava        {:mvn/version "32.1.1-jre"}
                                        io.github.clojure/tools.build {:mvn/version "0.9.4"}
+                                       com.fulcrologic/fulcro        {:mvn/version "3.6.8"}
                                        com.h2database/h2             {:mvn/version "2.2.220"}
                                        reagent/reagent               {:mvn/version "1.2.0"}
                                        thheller/shadow-cljs          {:mvn/version "2.24.1"}}}}}

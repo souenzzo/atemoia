@@ -1,30 +1,27 @@
 (ns atemoia.node-server
-  (:require ["node:http" :as http]
+  (:require [com.fulcrologic.fulcro.dom :as dom]
+            ["node:http" :as http]
             ["react" :as r]
             ["react-dom/server" :as rds]))
 
-(defn ui-index
-  [props]
-  (r/createElement "html" #js{}
-    #js[(r/createElement "head" #js{}
-          #js[(r/createElement "title" #js{} "hello")])
 
-        (r/createElement "body" #js{}
-          (r/createElement "div" #js{} "ok!"))]))
+;; see https://book.fulcrologic.com/#RawReactHooks
 
+(defn Root []
+  (dom/html
+    (dom/head
+      (dom/title "hello"))
+    (dom/body
+      (dom/div "world"))))
 
 (defn handler-impl
   [req ^js res]
   (.writeHead res 200 #js{"Content-Type" "text/html"})
   (.end res (str "<!DOCTYPE html>\n"
-              (rds/renderToString (r/createElement ui-index)))))
+              (rds/renderToString (r/createElement Root)))))
 
 (defn start
   [& _]
   (.listen (http/createServer (fn [req res]
                                 (handler-impl req res)))
     3000))
-
-
-
-
