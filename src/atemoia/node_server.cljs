@@ -38,31 +38,46 @@
   (fs-handler "./target/classes/public"))
 
 (defn handler-impl
-  [req]
-  (-> (static-handler req)
-    (.catch (fn [_err]
-              {:headers {"Content-Type" "text/html"}
-               :body    (str "<!DOCTYPE html>\n"
-                          (rds/renderToString (r/createElement Root)))
-               :status  200}))))
+  [{:keys [uri request-method]
+    :as   ring-request}]
+  (js/console.log #js[(pr-str request-method)
+                      uri])
+  (case uri
+    "/" {:headers {"Content-Type" "text/html"}
+         :body    (str "<!DOCTYPE html>\n"
+                    (rds/renderToString (r/createElement Root)))
+         :status  200}
+    "/todo" {:headers {"Content-Type" "application/json"}
+             :body    (js/JSON.stringify #js[])
+             :status  200}
+    (.catch (static-handler ring-request)
+      (fn [_ex]
+        {:status 404}))))
+
+(defn ring-handler->request-listener
+  [handler]
+  (fn [req ^js res]
+    (let [url (url/parse (.-url req))]
+      (-> {:uri            (.-pathname url)
+           :query-string   (.-query url)
+           :request-method (keyword (string/lower-case (.-method req)))
+           :headers        (js->clj (.-headers req))
+           #_#_:server-port -1
+           #_#_:server-name "localhost"
+           #_#_:remote-addr "127.0.0.1"
+           #_#_:scheme :http
+           #_#_:protocol "HTTP/1.1"
+           #_#_:body nil}
+        handler
+        js/Promise.resolve
+        (.then (fn [{:keys [status body headers]}]
+                 (.writeHead res status (clj->js headers))
+                 (.end res body)))))))
 
 (defn start
   [& _]
-  (.listen (http/createServer (fn [req ^js res]
-                                (let [url (url/parse (.-url req))]
-                                  (-> {:uri            (.-pathname url)
-                                       :query-string   (.-query url)
-                                       :request-method (keyword (string/lower-case (.-method req)))
-                                       :headers        (js->clj (.-headers req))
-                                       #_#_:server-port -1
-                                       #_#_:server-name "localhost"
-                                       #_#_:remote-addr "127.0.0.1"
-                                       #_#_:scheme :http
-                                       #_#_:protocol "HTTP/1.1"
-                                       #_#_:body nil}
-                                    handler-impl
-                                    js/Promise.resolve
-                                    (.then (fn [{:keys [status body headers]}]
-                                             (.writeHead res status (clj->js headers))
-                                             (.end res body)))))))
+  (.listen (http/createServer (fn [req res]
+                                ((ring-handler->request-listener handler-impl)
+                                 req res)))
+
     3000))
