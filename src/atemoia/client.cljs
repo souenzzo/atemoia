@@ -1,6 +1,11 @@
 (ns atemoia.client
-  (:require [reagent.core :as r]
-            [atemoia.note :as note]
+  (:require [atemoia.note :as note]
+            [com.fulcrologic.fulcro.application :as app]
+            [com.fulcrologic.fulcro.components :as comp]
+            [com.fulcrologic.fulcro.dom :as dom]
+            [com.fulcrologic.fulcro.networking.http-remote :as http]
+            [com.fulcrologic.fulcro.react.version18 :refer [with-react18]]
+            [reagent.core :as r]
             [reagent.dom.client :as rdc]))
 
 (defonce *state (r/atom {}))
@@ -75,15 +80,34 @@
 
 (defonce *root (atom nil))
 
-(defn after-load
+(defn after-load-reagent
   []
   (some-> @*root
     (rdc/render [ui-root])))
 
-(defn start
+(defn start-reagent
   []
   (let [container (js/document.getElementById "atemoia")
         root (rdc/create-root container)]
     (fetch-todos)
     (rdc/render root [ui-root])
     (reset! *root root)))
+
+
+(comp/defsc Root [this props]
+  {:query []}
+  (dom/div "ok"))
+
+
+(defonce app (-> {:remotes {:remote (http/fulcro-http-remote {})}}
+               app/fulcro-app
+               with-react18))
+
+(defn after-load
+  []
+  (app/mount! app Root "atemoia"))
+
+
+(defn start
+  []
+  (app/mount! app Root "atemoia"))

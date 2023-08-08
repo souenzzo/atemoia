@@ -3,6 +3,7 @@
             [com.fulcrologic.fulcro.application :as app]
             [com.fulcrologic.fulcro.components :as comp]
             [com.fulcrologic.fulcro.dom :as dom]
+            [atemoia.client :as client]
             ["node:fs/promises" :as fs]
             ["node:http" :as http]
             ["node:url" :as url]
@@ -11,7 +12,8 @@
 
 ;; see https://book.fulcrologic.com/#RawReactHooks
 
-(comp/defsc Root [this props]
+(def ui-root (comp/factory client/Root))
+(comp/defsc Index [this props]
   {:query []}
   (dom/html {:lang "en"}
     (dom/head
@@ -25,10 +27,11 @@
                  :content "A simple full-stack clojure app"})
       (dom/title "atemoia"))
     (dom/body
-      (dom/div {:id "atemoia"} "loading ...")
+      (dom/div {:id "atemoia"}
+        (ui-root))
       (dom/script {:src "/atemoia/main.js"}))))
 
-(def ui-root (comp/factory Root))
+(def ui-index (comp/factory Index))
 
 (defn fs-handler
   [prefix]
@@ -46,7 +49,7 @@
   (let [app (app/fulcro-app)]
     (r/createElement (fn []
                        (comp/with-parent-context app
-                         (ui-root))))))
+                         (ui-index))))))
 
 (defn handler-impl
   [{:keys [uri request-method]
@@ -67,17 +70,18 @@
 
 (defn ring-handler->request-listener
   [handler]
-  (fn [req ^js res]
-    (let [url (url/parse (.-url req))]
+  (fn [^js req ^js res]
+    (let [url (url/parse (.-url req))
+          socket (.-socket req)]
       (-> {:uri            (.-pathname url)
            :query-string   (.-query url)
            :request-method (keyword (string/lower-case (.-method req)))
            :headers        (js->clj (.-headers req))
-           #_#_:server-port -1
+           :server-port    (.-localPort socket)
            #_#_:server-name "localhost"
-           #_#_:remote-addr "127.0.0.1"
-           #_#_:scheme :http
-           #_#_:protocol "HTTP/1.1"
+           :remote-addr    (.-localAddress socket)
+           :scheme         :http
+           :protocol       "HTTP/1.1"
            #_#_:body nil}
         handler
         js/Promise.resolve
