@@ -4,7 +4,7 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "shadow-cljs": "2.24.1"
+    "shadow-cljs": "2.26.2"
   },
   "scripts": {
     "ci": "npm --audit=false --ignore-scripts=true --update-notifier=false --fund=false ci"

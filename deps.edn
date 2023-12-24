@@ -1,11 +1,11 @@
 {:paths   ["src"]
- :deps    {com.github.seancorfield/next.jdbc {:mvn/version "1.3.883"}
-           hiccup/hiccup                     {:mvn/version "2.0.0-RC1"}
-           io.pedestal/pedestal.jetty        {:mvn/version "0.6.0"}
-           io.pedestal/pedestal.service      {:mvn/version "0.6.0"}
+ :deps    {com.github.seancorfield/next.jdbc {:mvn/version "1.3.909"}
+           hiccup/hiccup                     {:mvn/version "2.0.0-RC2"}
+           io.pedestal/pedestal.jetty        {:mvn/version "0.6.3"}
+           io.pedestal/pedestal.service      {:mvn/version "0.6.3"}
            org.clojure/clojure               {:mvn/version "1.11.1"}
-           org.postgresql/postgresql         {:mvn/version "42.6.0"}
-           org.slf4j/slf4j-simple            {:mvn/version "2.0.7"}}
+           org.postgresql/postgresql         {:mvn/version "42.7.1"}
+           org.slf4j/slf4j-simple            {:mvn/version "2.0.9"}}
  :aliases {:test-runner {:extra-deps {io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                                                             :git/sha "dfb30dd6605cb6c0efc275e1df1736f6e90d4d73"}}
                          :main-opts  ["-m" "cognitect.test-runner"]}
@@ -13,8 +13,8 @@
                          :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
                                        "-Dclojure.core.async.go-checking=true"
                                        "-Dclojure.main.report=stderr"]
-                         :extra-deps  {com.google.guava/guava        {:mvn/version "32.1.1-jre"}
-                                       io.github.clojure/tools.build {:mvn/version "0.9.4"}
-                                       com.h2database/h2             {:mvn/version "2.2.220"}
+                         :extra-deps  {com.google.guava/guava        {:mvn/version "33.0.0-jre"}
+                                       io.github.clojure/tools.build {:mvn/version "0.9.6"}
+                                       com.h2database/h2             {:mvn/version "2.2.224"}
                                        reagent/reagent               {:mvn/version "1.2.0"}
-                                       thheller/shadow-cljs          {:mvn/version "2.24.1"}}}}}
+                                       thheller/shadow-cljs          {:mvn/version "2.26.2"}}}}}
