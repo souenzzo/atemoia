@@ -38,29 +38,26 @@
                                     .-target
                                     .-elements
                                     .-note)
-                          _ (when-not (note/valid? (.-value note-el))
-                              (.setCustomValidity note-el "Invalid note")
-                              (.reportValidity note-el)
-                              (throw (ex-info "Invalid note" {})))
-                          json-body #js{:note (.-value note-el)}
-                          unlock (fn [success?]
-                                   (fetch-todos)
-                                   (when success?
-                                     (set! (.-value note-el) ""))
-                                   (set! (.-disabled note-el) false))]
+                          note (.-value note-el)]
+                      (when-not (note/valid? note)
+                        (.setCustomValidity note-el "Invalid note")
+                        (.reportValidity note-el)
+                        (throw (ex-info "Invalid note" {})))
                       (set! (.-disabled note-el) true)
                       (-> (js/fetch "/todo" #js{:method "POST"
-                                                :body   (js/JSON.stringify json-body)})
+                                                :body   (js/JSON.stringify #js{:note note})})
                         (.then (fn [response]
-                                 (unlock (.-ok response))))
-                        (.catch (fn [ex]
-                                  (unlock false))))))}
+                                 (when (.-ok response)
+                                   (set! (.-value note-el) ""))
+                                 (fetch-todos)))
+                        (.finally (fn []
+                                    (set! (.-disabled note-el) false))))))}
       [:label
        "note: "
        [:input {:on-change (fn [evt]
                              (-> evt .-target
                                (.setCustomValidity "")))
-                :name "note"}]]]
+                :name      "note"}]]]
      (when error
        [:<>
         [:pre (str error)]

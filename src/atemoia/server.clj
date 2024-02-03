@@ -4,6 +4,7 @@
             [clojure.java.io :as io]
             [hiccup2.core :as h]
             [io.pedestal.http :as http]
+            [atemoia.note :as note]
             [io.pedestal.http.route :as route]
             [io.pedestal.interceptor :as interceptor]
             [next.jdbc :as jdbc]))
@@ -47,6 +48,8 @@
                io/reader
                (json/parse-stream true)
                :note)]
+    (when-not (note/valid? note)
+      (throw (ex-info "Invalid note" {})))
     (jdbc/execute! atm-conn
       ["INSERT INTO todo (note) VALUES (?);
         DELETE FROM todo WHERE id IN (SELECT id FROM todo ORDER BY id DESC OFFSET 10)"
