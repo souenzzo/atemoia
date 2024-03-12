@@ -1,7 +1,5 @@
 {
 	"name": "Clojure (Community)",
-	"build": {
-		"dockerfile": "Dockerfile"
-	}
+	"image": "tools-deps"
 }
 
