@@ -10,7 +10,7 @@ RUN adduser atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia ./deps.edn ./
-RUN clojure -M:dev -P && clojure -P --report stderr
+RUN clojure -M:dev -e :ok && clojure -M --report stderr -e :ok
 COPY --chown=atemoia . .
 COPY --from=node --chown=atemoia /home/atemoia/node_modules node_modules
 RUN clojure -M:dev -m atemoia.build
