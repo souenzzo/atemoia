@@ -1,5 +1,5 @@
 {
 	"name": "Clojure (Community)",
-	"image": "tools-deps"
+	"image": "clojure:tools-deps"
 }
 
