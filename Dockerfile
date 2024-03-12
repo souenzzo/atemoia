@@ -1,3 +1,3 @@
-FROM clojure:temurin-21-tools-deps-alpine
-RUN apk add gcompat
+FROM clojure:tools-deps
+RUN apt-get update && apt-get install procps
 

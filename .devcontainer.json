@@ -1,5 +1,5 @@
 {
 	"name": "Clojure (Community)",
-	"image": "clojure:tools-deps"
+	"build": {"dockerfile": "Dockerfile"}
 }
 
