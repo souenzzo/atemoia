@@ -38,7 +38,7 @@ Call `(dev-main)` and after some seconds the application should be available in 
 You will need a postgresql server running
 
 ```shell
-docker run --name my-postgres --env=POSTGRES_PASSWORD=postgres --rm -p 5432:5432 postgres:alpine
+docker compose up
 ```
 
 You can change `src/atemoia/server.clj` and run `(require 'atemoia.server :reload)` to see your changes.

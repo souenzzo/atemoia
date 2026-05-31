@@ -5,18 +5,18 @@ WORKDIR /home/atemoia
 COPY --chown=atemoia package.json package-lock.json ./
 RUN npm run ci
 
-FROM clojure:openjdk-19-tools-deps AS clojure
-RUN adduser atemoia
+FROM clojure:temurin-26-tools-deps-alpine AS clojure
+RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --chown=atemoia ./deps.edn ./
-RUN clojure -M:dev -P && clojure -P --report stderr
+RUN clojure -X:dev:deps prep && clojure -X:dev:deps prep
 COPY --chown=atemoia . .
 COPY --from=node --chown=atemoia /home/atemoia/node_modules node_modules
 RUN clojure -M:dev -m atemoia.build
 
-FROM openjdk:19-jdk
-RUN adduser atemoia
+FROM eclipse-temurin:26-jre-alpine
+RUN adduser -D atemoia
 USER atemoia
 WORKDIR /home/atemoia
 COPY --from=clojure --chown=atemoia /home/atemoia/target/atemoia.jar ./
