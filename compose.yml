@@ -31,13 +31,17 @@ services:
     image: docker.io/clojure:temurin-26-tools-deps-alpine
     command: [ "clojure", "-M:dev:test-runner" ]
     working_dir: /test-runner
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/postgres?user=postgres&password=postgres
     volumes:
       - classes:/test-runner/target/classes
       - m2:/root/.m2
+      - gitlibs:/root/.gitlibs
       - ./:/test-runner:ro
     profiles: [ test-runner ]
 
 volumes:
   classes:
   m2:
+  gitlibs:
   postgres:

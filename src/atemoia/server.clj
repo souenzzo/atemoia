@@ -76,6 +76,40 @@
 (defonce state
   (atom nil))
 
+(defn create-connector
+  [{::keys [atm-db-url] :as connector-map}]
+  (-> connector-map
+    ;; TODO use with-default-interceptors onde secure-headers is supported
+    #_conn/with-default-interceptors
+    (conn/with-interceptors
+      [(tracing/request-tracing-interceptor)
+       interceptors/log-request
+       interceptors/not-found
+       (ring-middlewares/content-type)
+       route/query-params
+       (body-params/body-params)
+       (secure-headers/secure-headers {:content-security-policy-settings ""})])
+    conn/optionally-with-dev-mode-interceptors
+    (conn/with-interceptor
+      {:name  ::with-context
+       :enter (fn [ctx]
+                (-> ctx
+                  (assoc-in [:request ::atm-conn] {:jdbcUrl atm-db-url})))})
+    (conn/with-interceptor
+      {:name  ::resource-path
+       :leave (fn [ctx]
+                (case (int (get-in ctx [:response :status] 404))
+                  404 (if-let [r (->> ctx :request :path-info
+                                   (str "public")
+                                   io/resource
+                                   slurp)]
+                        (assoc ctx :response {:status 200
+                                              :body   r})
+                        ctx)
+                  ctx))})
+    (conn/with-routes routes)
+    (jetty/create-connector {})))
+
 (defn -main
   [& _]
   (let [port (Long/getLong "atemoia.server.http-port" 8080)
@@ -83,40 +117,12 @@
                      "jdbc:postgresql://0:5432/postgres?user=postgres&password=postgres")]
     (swap! state
       (fn [st]
-        (some-> st conn/stop!)
-        (-> "0"
-          (conn/default-connector-map port)
-          ;; TODO use with-default-interceptors onde secure-headers is supported
-          #_conn/with-default-interceptors
-          (conn/with-interceptors
-            [(tracing/request-tracing-interceptor)
-             interceptors/log-request
-             interceptors/not-found
-             (ring-middlewares/content-type)
-             route/query-params
-             (body-params/body-params)
-             (secure-headers/secure-headers {:content-security-policy-settings ""})])
-          conn/optionally-with-dev-mode-interceptors
-          (conn/with-interceptor
-            {:name  ::with-context
-             :enter (fn [ctx]
-                      (-> ctx
-                        (assoc-in [:request ::atm-conn] {:jdbcUrl atm-db-url})))})
-          (conn/with-interceptor
-            {:name  ::resource-path
-             :leave (fn [ctx]
-                      (case (int (get-in ctx [:response :status] 404))
-                        404 (if-let [r (->> ctx :request :path-info
-                                         (str "public")
-                                         io/resource
-                                         slurp)]
-                              (assoc ctx :response {:status 200
-                                                    :body   r})
-                              ctx)
-                        ctx))})
-          (conn/with-routes routes)
-          (jetty/create-connector {})
-          conn/start!)))))
+        (some-> st conn/stop!
+          (-> "0"
+            (conn/default-connector-map port)
+            (assoc ::atm-db-url atm-db-url)
+            create-connector
+            conn/start!))))))
 
 (comment
   (System/setProperty "io.pedestal.dev-mode" "true")

@@ -2,50 +2,55 @@
   (:require [atemoia.server :as atemoia]
             [cheshire.core :as json]
             [clojure.test :refer [deftest is]]
-            [io.pedestal.http :as http]
-            [io.pedestal.test :refer [response-for]]
-            [next.jdbc :as jdbc]
-            [next.jdbc.result-set :as rs]))
+            [io.pedestal.connector :as conn]
+            [io.pedestal.connector.test :refer [response-for]])
+  (:import (org.postgresql.util PSQLException)))
 
 (set! *warn-on-reflection* true)
 
 (deftest hello
-  (let [atm-conn (jdbc/with-options (jdbc/get-connection {:jdbcUrl "jdbc:h2:mem:"})
-                   {:builder-fn rs/as-lower-maps})
-        service-fn (-> {::atemoia/atm-conn atm-conn}
-                     atemoia/create-service
-                     http/dev-interceptors
-                     http/create-servlet
-                     ::http/service-fn)]
-    (atemoia/install-schema {::atemoia/atm-conn atm-conn})
-    (is (= []
-          (-> service-fn
+  (let [atm-db-url (System/getProperty "atemoia.server.atm-db-url"
+                     (or (System/getenv "DATABASE_URL")
+                       "jdbc:postgresql://0:5432/postgres?user=postgres&password=postgres"))
+        conn (-> 8080
+               conn/default-connector-map
+               (assoc ::atemoia/atm-db-url atm-db-url)
+               atemoia/create-connector)
+        note (str (random-uuid))]
+    (try
+      (atemoia/install-schema {::atemoia/atm-conn atm-db-url})
+      (catch PSQLException _))
+    (is (= true
+          (-> conn
             (response-for :get "/todo")
             :body
-            (json/parse-string true)))
-      "fetching todos before creating")
+            (json/parse-string true)
+            (->> (filter (comp #{note} :todo/note)))
+            empty?))
+      "fetching the todos, after creating one")
     (is (= 201
-          (-> service-fn
+          (-> conn
             (response-for :post "/todo"
-              :body (json/generate-string {:note "hello world"}))
+              :body (json/generate-string {:note note}))
             :status))
       "creating a todo")
-    (is (= [{:todo/id   1
-             :todo/note "hello world"}]
-          (-> service-fn
+    (is (= false
+          (-> conn
             (response-for :get "/todo")
             :body
-            (json/parse-string true)))
+            (json/parse-string true)
+            (->> (filter (comp #{note} :todo/note)))
+            empty?))
       "fetching the todos, after creating one")
     (dotimes [idx 10]
       (is (= 201
-            (-> service-fn
+            (-> conn
               (response-for :post "/todo"
                 :body (json/generate-string {:note (str "hello world" idx)}))
               :status))
         (str "creating many todos: idx = " idx)))
     (is (== 10
-          (-> service-fn
+          (-> conn
             (response-for :get "/todo")
             :body
             (json/parse-string true)
