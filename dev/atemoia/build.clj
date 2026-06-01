@@ -7,12 +7,12 @@
 (def class-dir "target/classes")
 (def uber-file "target/atemoia.jar")
 
-(defn -main
-  [& _]
-  (let [basis (b/create-basis {:project "deps.edn"})]
+(defn build
+  []
+  (let [basis (b/create-basis)]
     (b/delete {:path "target"})
     (shadow.server/start!)
-    (shadow.api/release :atemoia)
+    (shadow.api/release! :atemoia)
     (shadow.server/stop!)
     (b/write-pom {:class-dir class-dir
                   :lib       lib
@@ -25,5 +25,12 @@
     (b/uber {:class-dir class-dir
              :main      'atemoia.server
              :uber-file uber-file
-             :basis     basis})
-    (shutdown-agents)))
+             :basis     basis})))
+
+(defn -main
+  [& _]
+  (build)
+  (shutdown-agents))
+
+(comment
+  (build))

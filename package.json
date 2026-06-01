@@ -1,12 +1,13 @@
 {
   "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
   },
   "devDependencies": {
-    "shadow-cljs": "2.26.2"
+    "shadow-cljs": "3.4.6"
   },
   "scripts": {
+    "test": "shadow-cljs release node-test && node target/node-test.js",
     "ci": "npm --audit=false --ignore-scripts=true --update-notifier=false --fund=false ci"
   }
 }
