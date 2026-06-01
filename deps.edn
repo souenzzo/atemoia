@@ -5,15 +5,15 @@
            io.pedestal/pedestal.jetty        {:mvn/version "0.8.1"}
            io.pedestal/pedestal.service      {:mvn/version "0.8.1"}
            org.clojure/clojure               {:mvn/version "1.12.5"}
-           org.postgresql/postgresql         {:mvn/version "42.7.10"}
+           org.postgresql/postgresql         {:mvn/version "42.7.11"}
            org.slf4j/slf4j-simple            {:mvn/version "2.0.17"}}
  :aliases {:test-runner {:extra-deps {io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                                                             :git/sha "dfb30dd6605cb6c0efc275e1df1736f6e90d4d73"}}
                          :main-opts  ["-m" "cognitect.test-runner"]}
-           :dev         {:extra-paths ["dev" "test"]
+           :dev         {:extra-paths ["dev" "test" "target/classes"]
                          :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
                                        "-Dclojure.main.report=stderr"]
                          :extra-deps  {io.github.clojure/tools.build {:mvn/version "0.10.14"}
                                        com.h2database/h2             {:mvn/version "2.4.240"}
                                        reagent/reagent               {:mvn/version "2.0.1"}
-                                       thheller/shadow-cljs          {:mvn/version "3.4.6"}}}}}
+                                       thheller/shadow-cljs          {:mvn/version "3.4.10"}}}}}

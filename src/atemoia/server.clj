@@ -1,12 +1,17 @@
 (ns atemoia.server
   (:gen-class)
-  (:require [cheshire.core :as json]
+  (:require [atemoia.note :as note]
+            [cheshire.core :as json]
             [clojure.java.io :as io]
             [hiccup2.core :as h]
-            [io.pedestal.http :as http]
-            [atemoia.note :as note]
+            [io.pedestal.connector :as conn]
+            [io.pedestal.http.body-params :as body-params]
+            [io.pedestal.http.jetty :as jetty]
+            [io.pedestal.http.ring-middlewares :as ring-middlewares]
             [io.pedestal.http.route :as route]
-            [io.pedestal.interceptor :as interceptor]
+            [io.pedestal.http.secure-headers :as secure-headers]
+            [io.pedestal.http.tracing :as tracing]
+            [io.pedestal.service.interceptors :as interceptors]
             [next.jdbc :as jdbc]))
 
 (set! *warn-on-reflection* true)
@@ -68,19 +73,6 @@
      ["/todo" :post create-todo]
      ["/install-schema" :post install-schema]})
 
-(defn create-service
-  [service-map]
-  (-> service-map
-    (assoc ::http/secure-headers {:content-security-policy-settings ""}
-           ::http/resource-path "public"
-           ::http/routes (fn []
-                           (route/expand-routes routes)))
-    http/default-interceptors
-    (update ::http/interceptors
-      (partial cons
-        (interceptor/interceptor {:enter (fn [ctx]
-                                           (update ctx :request merge service-map))})))))
-
 (defonce state
   (atom nil))
 
@@ -88,23 +80,46 @@
   [& _]
   (let [port (Long/getLong "atemoia.server.http-port" 8080)
         atm-db-url (System/getProperty "atemoia.server.atm-db-url"
-                     "jdbc:postgresql://127.0.0.1:5432/postgres?user=postgres&password=postgres")]
+                     "jdbc:postgresql://0:5432/postgres?user=postgres&password=postgres")]
     (swap! state
       (fn [st]
-        (some-> st http/stop)
-        (-> {::http/port      port
-             ::atm-conn       {:jdbcUrl atm-db-url}
-             ::http/file-path "target/classes/public"
-             ::http/host      "0.0.0.0"
-             ::http/type      :jetty
-             ::http/join?     false}
-          create-service
-          http/dev-interceptors
-          http/create-server
-          http/start)))))
+        (some-> st conn/stop!)
+        (-> "0"
+          (conn/default-connector-map port)
+          ;; TODO use with-default-interceptors onde secure-headers is supported
+          #_conn/with-default-interceptors
+          (conn/with-interceptors
+            [(tracing/request-tracing-interceptor)
+             interceptors/log-request
+             interceptors/not-found
+             (ring-middlewares/content-type)
+             route/query-params
+             (body-params/body-params)
+             (secure-headers/secure-headers {:content-security-policy-settings ""})])
+          conn/optionally-with-dev-mode-interceptors
+          (conn/with-interceptor
+            {:name  ::with-context
+             :enter (fn [ctx]
+                      (-> ctx
+                        (assoc-in [:request ::atm-conn] {:jdbcUrl atm-db-url})))})
+          (conn/with-interceptor
+            {:name  ::resource-path
+             :leave (fn [ctx]
+                      (case (int (get-in ctx [:response :status] 404))
+                        404 (if-let [r (->> ctx :request :path-info
+                                         (str "public")
+                                         io/resource
+                                         slurp)]
+                              (assoc ctx :response {:status 200
+                                                    :body   r})
+                              ctx)
+                        ctx))})
+          (conn/with-routes routes)
+          (jetty/create-connector {})
+          conn/start!)))))
 
 (comment
-  ;; docker run --name my-postgres --env=POSTGRES_PASSWORD=postgres --rm -p 5432:5432 postgres:alpine
+  (System/setProperty "io.pedestal.dev-mode" "true")
   (-> `shadow.cljs.devtools.server/start!
     requiring-resolve
     (apply []))

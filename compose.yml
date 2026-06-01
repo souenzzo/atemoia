@@ -1,7 +1,43 @@
+## Develop locally from REPL
+# podman compose --profile dev up
+
+## Run everything locally inside container
+# podman compose --profile local up
+
+## Run all tests inside container
+# podman compose --profile test-runner up --exit-code-from test-runner
+
 services:
+  atemoia:
+    image: atemoia
+    profiles: [ local ]
+    build: .
+    ports:
+      - "8080:8080"
+    links:
+      - postgres
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/postgres?user=postgres&password=postgres
   postgres:
-    image: postgres:alpine
+    profiles: [ test-runner, dev, local ]
+    image: docker.io/postgres:alpine
+    volumes:
+      - postgres:/var/lib/postgresql/18/data
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+  test-runner:
+    image: docker.io/clojure:temurin-26-tools-deps-alpine
+    command: [ "clojure", "-M:dev:test-runner" ]
+    working_dir: /test-runner
+    volumes:
+      - classes:/test-runner/target/classes
+      - m2:/root/.m2
+      - ./:/test-runner:ro
+    profiles: [ test-runner ]
+
+volumes:
+  classes:
+  m2:
+  postgres:

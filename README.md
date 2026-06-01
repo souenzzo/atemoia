@@ -38,7 +38,7 @@ Call `(dev-main)` and after some seconds the application should be available in 
 You will need a postgresql server running
 
 ```shell
-docker compose up
+docker compose --profile dev up
 ```
 
 You can change `src/atemoia/server.clj` and run `(require 'atemoia.server :reload)` to see your changes.
