@@ -73,7 +73,7 @@
      ["/todo" :post create-todo]
      ["/install-schema" :post install-schema]})
 
-(defonce state
+(defonce *state
   (atom nil))
 
 (defn create-connector
@@ -99,13 +99,13 @@
       {:name  ::resource-path
        :leave (fn [ctx]
                 (case (int (get-in ctx [:response :status] 404))
-                  404 (if-let [r (->> ctx :request :path-info
-                                   (str "public")
-                                   io/resource
-                                   slurp)]
-                        (assoc ctx :response {:status 200
-                                              :body   r})
-                        ctx)
+                  404 (let [file-path (->> ctx :request :path-info
+                                        (str "public"))
+                            resource (io/resource file-path)]
+                        (if resource
+                          (assoc ctx :response {:status 200
+                                                :body   (slurp resource)})
+                          ctx))
                   ctx))})
     (conn/with-routes routes)
     (jetty/create-connector {})))
@@ -115,14 +115,14 @@
   (let [port (Long/getLong "atemoia.server.http-port" 8080)
         atm-db-url (System/getProperty "atemoia.server.atm-db-url"
                      "jdbc:postgresql://0:5432/postgres?user=postgres&password=postgres")]
-    (swap! state
+    (swap! *state
       (fn [st]
-        (some-> st conn/stop!
-          (-> "0"
-            (conn/default-connector-map port)
-            (assoc ::atm-db-url atm-db-url)
-            create-connector
-            conn/start!))))))
+        (some-> st conn/stop!)
+        (-> "0"
+          (conn/default-connector-map port)
+          (assoc ::atm-db-url atm-db-url)
+          create-connector
+          conn/start!)))))
 
 (comment
   (System/setProperty "io.pedestal.dev-mode" "true")
