@@ -19,10 +19,10 @@ clj -Sdescribe
  :repl-aliases ""}
 ```
 
-Suba um banco Postgres com usuario/senha Postgres. Exemplo em docker
+Suba um banco Postgres com usuario/senha Postgres. Exemplo em podman
 
 ```shell
-docker run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:alpine
+podman run -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:alpine
 ```
 
 Clone o projeto, entre na pasta e abra o repl do clojure. Recomendado uso de um repl integrado ao editor de texto. TODO:

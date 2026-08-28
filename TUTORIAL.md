@@ -330,7 +330,7 @@ Here a basic todo-app
 
 > Build script.
 
-> Dockerizing
+> Containerizing
 
 > Heroku
 

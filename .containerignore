@@ -6,8 +6,8 @@ node_modules/
 target/
 *.iml
 *.md
-.dockerignore
+.containerignore
 .gitignore
 .nrepl-port
-Dockerfile
+Containerfile
 heroku.yml

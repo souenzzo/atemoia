@@ -19,7 +19,7 @@ There is a build script in `dev/atemoia/build.clj`. This is invoked via `clj -M:
 The build script compiles clojurescript to a minified bundle and compiles clojure to java classes.
 Then generates a JAR file that include both java class files and javascript static assets.
 
-There is a `Dockerfile` that uses `node:alpine` image to install `npm` dependencies.
+There is a `Containerfile` that uses `node:alpine` image to install `npm` dependencies.
 Then use `clojure:alpine` image to compile and create the `jar` file.
 Then create an `openjdk:alpine` image with just the jar file as "final product".
 
@@ -38,7 +38,7 @@ Call `(dev-main)` and after some seconds the application should be available in 
 You will need a postgresql server running
 
 ```shell
-docker compose --profile dev up
+podman compose --profile dev up
 ```
 
 You can change `src/atemoia/server.clj` and run `(require 'atemoia.server :reload)` to see your changes.
