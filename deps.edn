@@ -2,18 +2,19 @@
  :deps    {com.github.seancorfield/next.jdbc {:mvn/version "1.3.1118"}
            cheshire/cheshire                 {:mvn/version "6.2.0"}
            hiccup/hiccup                     {:mvn/version "2.0.0"}
-           io.pedestal/pedestal.jetty        {:mvn/version "0.8.1"}
-           io.pedestal/pedestal.service      {:mvn/version "0.8.1"}
-           org.clojure/clojure               {:mvn/version "1.12.5"}
+           io.pedestal/pedestal.jetty        {:mvn/version "0.8.2"}
+           io.pedestal/pedestal.service      {:mvn/version "0.8.2"}
+           org.clojure/clojure               {:mvn/version "1.12.6"}
            org.postgresql/postgresql         {:mvn/version "42.7.13"}
-           org.slf4j/slf4j-simple            {:mvn/version "2.0.18"}}
+           org.slf4j/slf4j-simple            {:mvn/version "2.0.19"}}
  :aliases {:test-runner {:extra-deps {io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
                                                                             :git/sha "dfb30dd6605cb6c0efc275e1df1736f6e90d4d73"}}
                          :main-opts  ["-m" "cognitect.test-runner"]}
            :dev         {:extra-paths ["dev" "test" "target/classes"]
                          :jvm-opts    ["-XX:-OmitStackTraceInFastThrow"
-                                       "-Dclojure.main.report=stderr"]
+                                       "-Dclojure.main.report=stderr"
+                                       "-Dio.pedestal.dev-mode=true"]
                          :extra-deps  {io.github.clojure/tools.build {:mvn/version "0.10.14"}
-                                       com.h2database/h2             {:mvn/version "2.4.240"}
+                                       com.h2database/h2             {:mvn/version "2.5.250"}
                                        reagent/reagent               {:mvn/version "2.0.1"}
-                                       thheller/shadow-cljs          {:mvn/version "3.5.0"}}}}}
+                                       thheller/shadow-cljs          {:mvn/version "3.5.3"}}}}}

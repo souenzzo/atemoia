@@ -5,13 +5,7 @@
             [clojure.java.io :as io]
             [hiccup2.core :as h]
             [io.pedestal.connector :as conn]
-            [io.pedestal.http.body-params :as body-params]
             [io.pedestal.http.jetty :as jetty]
-            [io.pedestal.http.ring-middlewares :as ring-middlewares]
-            [io.pedestal.http.route :as route]
-            [io.pedestal.http.secure-headers :as secure-headers]
-            [io.pedestal.http.tracing :as tracing]
-            [io.pedestal.service.interceptors :as interceptors]
             [next.jdbc :as jdbc]))
 
 (set! *warn-on-reflection* true)
@@ -76,20 +70,14 @@
 (defonce *state
   (atom nil))
 
+(def content-security-policy-settings
+  {:object-src "'none'"
+   :script-src "'unsafe-inline' 'unsafe-eval' https: http:"})
+
 (defn create-connector
   [{::keys [atm-db-url] :as connector-map}]
   (-> connector-map
-    ;; TODO use with-default-interceptors onde secure-headers is supported
-    #_conn/with-default-interceptors
-    (conn/with-interceptors
-      [(tracing/request-tracing-interceptor)
-       interceptors/log-request
-       interceptors/not-found
-       (ring-middlewares/content-type)
-       route/query-params
-       (body-params/body-params)
-       (secure-headers/secure-headers {:content-security-policy-settings ""})])
-    conn/optionally-with-dev-mode-interceptors
+    (conn/with-default-interceptors {:secure-headers {:content-security-policy-settings content-security-policy-settings}})
     (conn/with-interceptor
       {:name  ::with-context
        :enter (fn [ctx]
@@ -120,12 +108,14 @@
         (some-> st conn/stop!)
         (-> "0"
           (conn/default-connector-map port)
+          conn/optionally-with-dev-mode-interceptors
           (assoc ::atm-db-url atm-db-url)
           create-connector
           conn/start!)))))
 
 (comment
   (System/setProperty "io.pedestal.dev-mode" "true")
+  (System/setProperty "io.pedestal.dev-mode" "false")
   (-> `shadow.cljs.devtools.server/start!
     requiring-resolve
     (apply []))
